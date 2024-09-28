@@ -99,20 +99,6 @@ export const TextNode = memo((node: Node) => {
   const { data, selected, id, type } = node;
   console.log("123", data);
   const [arrow] = useState<"Show" | "Hide" | "Center">("Show");
-  const [value, setValue] = useState(data?.richCardCarousel?.width || "small");
-  const [media, setMedia] = useState(null);
-  const [value1, setValue1] = useState("");
-  const [button, setButton] = useState<{ actions: ActionData[] }>({
-    actions: [
-      {
-        id: 0,
-        type: "quick", // Quick Reply as default
-        title: "",
-        payload: "",
-      },
-    ],
-  });
-
   const alledges = getConnectedEdges([node], edges);
 
   React.useEffect(() => {
@@ -217,68 +203,6 @@ export const TextNode = memo((node: Node) => {
             </div>
           </div>
         );
-
-      // case "richcard":
-      //   const richcardButtons =
-      //     data.buttons && data.buttons.length > 0
-      //       ? data.buttons
-      //       : [defaultButton];
-      //   return (
-      //     <div className="py-2 px-3 min-h-[32px]">
-      //         <Typography.Text style={{boxShadow: "5px 8px 24px 5px rgba(208, 216, 243, 0.6)" }}>{data.discription}</Typography.Text>
-      //         <div style={{ textAlign: "center",  }}>
-      //         {data?.media ? (
-      //           <Image
-      //             src={data.media}
-      //             preview={false}
-      //             width={getImageWidth()}
-      //             alt="Richcard media"
-      //           />
-      //         ) : (
-      //           <Image
-      //             width={100}
-      //             preview={false}
-      //             src="https://www.trschools.com/templates/imgs/default_placeholder.png"
-      //           />
-      //         )}
-      //       </div>
-      //       <Typography.Text strong>{data.label}</Typography.Text>
-      //       <br />
-      //       <Typography.Text>{data.title}</Typography.Text>
-      //       <Typography.Text>{data.discription}</Typography.Text>
-      //       <div className="mt-2">
-      //         {richcardButtons.map((button: any, index: any) => (
-      //           <React.Fragment key={index}>
-      //             <Flex justify="space-around">
-      //               {button.type === "quick" ? (
-      //                 <Button size="small"
-      //                   block
-      //                   style={{ background: "#adafce", color: "black" }}
-      //                 >
-      //                   <Handle
-      //                     type="source"
-      //                     id={`button-${index}`}
-      //                     position={Position.Right}
-      //                     isConnectable={true}
-      //                   />
-      //                   {button.title || "Untitled"}
-      //                 </Button>
-      //               ) : (
-      //                 <Button size="small"
-      //                   block
-      //                   style={{ background: "##adafce", color: "black" }}
-      //                 >
-      //                   {button.title || "Untitled"}
-      //                 </Button>
-      //               )}
-      //             </Flex>
-      //             {index < richcardButtons.length - 1 && <br />}
-      //           </React.Fragment>
-      //         ))}
-      //       </div>
-      //     </div>
-      //   );
-
       case "richcard":
         return (
           <>
@@ -372,7 +296,7 @@ export const TextNode = memo((node: Node) => {
                             <Image
                               src={card.media}
                               preview={false}
-                              width={imageWidth} // Apply dynamic width here
+                              width={imageWidth}
                               alt="Richcard media"
                             />
                           ) : (
@@ -403,7 +327,7 @@ export const TextNode = memo((node: Node) => {
                                       >
                                         <Handle
                                           type="source"
-                                          id={`button-${index}-${btnIndex}`} // Unique ID for each button
+                                          id={`button-${index}-${btnIndex}`}
                                           position={Position.Right}
                                           isConnectable={true}
                                         />

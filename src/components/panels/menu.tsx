@@ -21,7 +21,6 @@ const selector = (state: {
 });
 
 export const menu = () => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { selectedNode, updateNodeLabel, setSelectedNode } = useStore(
     selector,
     shallow

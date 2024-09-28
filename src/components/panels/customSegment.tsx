@@ -1,7 +1,6 @@
 import { CloseOutlined } from "@ant-design/icons";
-import { Col, Flex, Popconfirm, Row, Space, Tag } from "antd";
+import { Col, Popconfirm, Row, Space, Tag } from "antd";
 import React, { useState } from "react";
-
 
 interface customSegmentProps {
   options: string[];
@@ -14,7 +13,7 @@ interface customSegmentProps {
   previewImage: string[];
 }
 
-const customSegment: React.FC<CustomSegmentProps> = ({
+const customSegment: React.FC<customSegmentProps> = ({
   options,
   onChange,
   setOptions,
@@ -62,104 +61,54 @@ const customSegment: React.FC<CustomSegmentProps> = ({
   };
 
   return (
-    // <div
-    //   style={{
-    //     display: "flex",
-    //     gap: "10px",
-    //   }}
-    // >
-    //   {options.map((option, index) => (
-    //     <Tag
-    //       key={option}
-    //       onClick={() => {
-    //         setClose(false);
-    //         handleSelect(index);
-    //       }}
-    //       onClose={(e) => {
-    //         e.preventDefault();
-    //         setClose(true);
-    //       }}
-    //       closeIcon={
-    //         options.length === 2 ? null : (
-    //           <Popconfirm
-    //             icon=""
-    //             description="Are you sure to delete this Card?"
-    //             onConfirm={() => handleClose(index)}
-    //             onCancel={cancel}
-    //             okText="Yes"
-    //             cancelText="No"
-    //           >
-    //             <CloseOutlined style={{ fontSize: "14px" }} />
-    //           </Popconfirm>
-    //         )
-    //       }
-    //       style={{
-    //         border: selectedValue === index ? "2px solid #91caff" : "",
-    //         cursor: "pointer",
-    //         fontSize: 14,
-    //         margin: "0",
-    //         padding: "5px 10px",
-    //         backgroundColor: selectedValue === index ? "#fff" : "#fff",
-    //         color: "#000",
-    //         zIndex: 1,
-    //         borderRadius: 5,
-    //       }}
-    //     >
-    //       {option}
-    //     </Tag>
-    //   ))}
-    // </div>
     <div>
-  <Row gutter={[16,24]}>
-    {options.map((option, index) => (
-      // <Flex gap={"large"}>
-      <Col md={6} key={option}>
-      <Space size={"large"}>
-        <Tag
-          onClick={() => {
-            setClose(false);
-            handleSelect(index);
-          }}
-         
-          onClose={(e) => {
-            e.preventDefault();
-            setClose(true);
-          }}
-          closeIcon={
-            options.length === 2 ? null : (
-              <Popconfirm
-                icon=""
-                description="Are you sure to delete this Card?"
-                onConfirm={() => handleClose(index)}
-                onCancel={cancel}
-                okText="Yes"
-                cancelText="No"
+      <Row gutter={[16, 24]}>
+        {options.map((option, index) => (
+          // <Flex gap={"large"}>
+          <Col md={6} key={option}>
+            <Space size={"large"}>
+              <Tag
+                onClick={() => {
+                  setClose(false);
+                  handleSelect(index);
+                }}
+                onClose={(e) => {
+                  e.preventDefault();
+                  setClose(true);
+                }}
+                closeIcon={
+                  options.length === 2 ? null : (
+                    <Popconfirm
+                      icon=""
+                      description="Are you sure to delete this Card?"
+                      onConfirm={() => handleClose(index)}
+                      onCancel={cancel}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      <CloseOutlined style={{ fontSize: "14px" }} />
+                    </Popconfirm>
+                  )
+                }
+                style={{
+                  border: selectedValue === index ? "2px solid #91caff" : "",
+                  cursor: "pointer",
+                  fontSize: 14,
+                  margin: "0",
+                  backgroundColor: selectedValue === index ? "#fff" : "#fff",
+                  color: "#000",
+                  zIndex: 1,
+                  borderRadius: 5,
+                }}
               >
-                <CloseOutlined style={{ fontSize: "14px" }} />
-              </Popconfirm>
-            )
-          }
-          style={{
-            border: selectedValue === index ? "2px solid #91caff" : "",
-            cursor: "pointer",
-            fontSize: 14,
-            margin: "0",
-            // padding: "5px 5px",
-            backgroundColor: selectedValue === index ? "#fff" : "#fff",
-            color: "#000",
-            zIndex: 1,
-            borderRadius: 5,
-            // width: "100%",
-          }}
-        >
-          {option}
-        </Tag>
-        </Space>
-      </Col>
-      // </Flex>
-    ))}
-  </Row>
-</div>
+                {option}
+              </Tag>
+            </Space>
+          </Col>
+          // </Flex>
+        ))}
+      </Row>
+    </div>
   );
 };
 

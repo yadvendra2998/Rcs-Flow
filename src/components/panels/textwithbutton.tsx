@@ -53,7 +53,6 @@ export const TextWithPanel: React.FC = () => {
       setTemplateName(selectedNode.data.name || "");
       setDiscription(selectedNode.data.discription || "");
       console.log("discription", selectedNode);
-      // setButtons({ actions: selectedNode.data.buttons || [] });
       setTitle(selectedNode.data.label || "");
     }
   }, [selectedNode]);

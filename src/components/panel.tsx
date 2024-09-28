@@ -18,14 +18,6 @@ export const Panel = () => {
 	)
 }
 
-// const getPanel = (type: string) => {
-// 	// when list of panels grows, use a switch statement or a map
-// 	if (type === 'textNode') {
-// 		return TextPanel
-// 	}
-// 	return AddNodePanel
-// }
-
 const getPanel = (type: string) => {
     if (type === 'textNode') {
         return TextPanel;

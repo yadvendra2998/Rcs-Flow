@@ -24,9 +24,6 @@ export const TextPanel = () => {
   const [title, setTitle] = useState<string>(selectedNode?.data.label);
 
   function handleChange(value: string) {
-    // setData((prev) => {
-    //   const actions = [...prev.actions];
-    //   actions[index] = { ...actions[index], [key]: value };
     setTitle(value)
     if (selectedNode) {
       updateNodeLabel(selectedNode.id, {
@@ -34,9 +31,6 @@ export const TextPanel = () => {
         name: templateName,
       });
     }
-
-    // return { ...prev, actions };
-    // });
   }
 
   const handleTemplateNameChange = (value: string) => {
