@@ -12,6 +12,7 @@ import { shallow } from "zustand/shallow";
 import { Header, Panel } from "./components";
 import { nodesConfig } from "./config/site";
 import useStore from "./config/store";
+import DownloadButton from "./components/panels/DownloadButton";
 import { handleDragOver, handleOnDrop } from "./lib/utils";
 import "./App.css";
 
@@ -77,7 +78,7 @@ export default function App() {
           const connectedEdges = getConnectedEdges([node], eds);
 
           const remainingEdges = acc.filter(
-            (edge) => !connectedEdges.includes(edge),
+            (edge) => !connectedEdges.includes(edge)
           );
 
           const createdEdges = incomers.flatMap(({ id: source }) =>
@@ -85,14 +86,14 @@ export default function App() {
               id: `${source}->${target}`,
               source,
               target,
-            })),
+            }))
           );
 
           return [...remainingEdges, ...createdEdges];
-        }, eds),
+        }, eds)
       );
     },
-    [nodes],
+    [nodes]
   );
   const isValidConnection = (connection: Connection) => {
     const sourceNode = nodes.find((node) => node.id === connection.source);
@@ -108,7 +109,7 @@ export default function App() {
   return (
     <ReactFlowProvider>
       <Header />
-      <main className="flex overflow-hidden" >
+      <main className="flex overflow-hidden">
         <div
           className="h-[calc(100vh_-_48px)] flex-grow"
           ref={reactFlowWrapper}
@@ -136,12 +137,13 @@ export default function App() {
             nodeTypes={nodesConfig.nodeTypes}
           >
             <Controls />
+            <DownloadButton />
             <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           </ReactFlow>
         </div>
-       <div className="w-[303px]" >
+        <div className="w-[303px]">
           <Panel />
-	   </div>
+        </div>
       </main>
     </ReactFlowProvider>
   );
