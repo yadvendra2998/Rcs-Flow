@@ -49,7 +49,15 @@ interface RichCardProps {
 
 const selector = (state: {
   selectedNode: Node | null;
-  updateNodeLabel: (nodeId: string, nodeVal: any) => void;
+  updateNodeLabel: (
+    nodeId: string,
+    nodeData: {
+      label: string;
+      name: string;
+      discription: string;
+      buttons: ActionData[];
+    }
+  ) => void;
   setSelectedNode: (node: Node | null) => void;
 }) => ({
   selectedNode: state.selectedNode,
@@ -87,9 +95,9 @@ export const richcard = ({ isEdit, data }: RichCardProps) => {
   const [textareaValue, setTextareaValue] = useState<string>(
     typeof selectedNode?.data?.label === "string" ? selectedNode.data.label : ""
   );
-  const [templateName, setTemplateName] = useState<string>("");
-  const [title, setTitle] = useState<string>("richcard");
-  const [discription, setDiscription] = useState<string>("");
+  const [templateName, setTemplateName] = useState<string>(selectedNode?.data?.name);
+  const [title, setTitle] = useState<string>(selectedNode?.data?.title);
+  const [description, setDescription] = useState<string>(selectedNode?.data?.description);
   const [button, setButton] = useState<{ actions: ActionData[] }>({
     actions: [
       {
@@ -104,9 +112,9 @@ export const richcard = ({ isEdit, data }: RichCardProps) => {
   useEffect(() => {
     if (selectedNode) {
       setTextareaValue(selectedNode.data.label || "");
-      setTitle(selectedNode.data.title || "");
-      setDiscription(selectedNode.data.description || "");
-      setTemplateName(selectedNode.data.name || "");
+      setTitle(selectedNode.data.title || title);
+      setDescription(selectedNode.data.description || description);
+      setTemplateName(selectedNode.data.name || templateName);
       if (selectedNode.data?.media) {
         setMedia(selectedNode.data.media);
         setRichCardButtons((prev) => ({
@@ -119,36 +127,20 @@ export const richcard = ({ isEdit, data }: RichCardProps) => {
     }
   }, [selectedNode]);
 
-  useEffect(() => {
-    if (selectedNode) {
-      updateNodeLabel(selectedNode.id, {
-        media,
-        mediaHeight: value1,
-        label: title || textareaValue,
-        name: templateName,
-        description: discription,
-        buttons: button.actions,
-      });
-    }
-  }, [selectedNode, media, value1, title, templateName, discription, button]);
-
   const onChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     console.log("radio value-->", newValue);
 
     setValue1(newValue);
     setRichCardButtons((prev) => ({ ...prev, mediaHeight: newValue }));
-    updateNodeLabel(
-      (selectedNode.id,
-      {
-        media: media,
-        mediaHeight: newValue,
-        label: title,
-        name: templateName,
-        description: discription,
-        buttons: button?.actions,
-      })
-    );
+    updateNodeLabel(selectedNode.id, {
+      media: media,
+      mediaHeight: newValue,
+      label: title,
+      name: templateName,
+      description: description,
+      buttons: button?.actions,
+    });
   };
 
   const handleTemplateNameChange = (value: string) => {
@@ -159,28 +151,25 @@ export const richcard = ({ isEdit, data }: RichCardProps) => {
         name: value,
         media,
         mediaHeight: value1,
-        description: discription,
+        description: description,
         buttons: button.actions,
       });
     }
   };
 
   const handleDescriptionChange = (value: string) => {
-    setDiscription(value);
+    setDescription(value);
     if (selectedNode) {
-      updateNodeLabel(
-        (selectedNode.id,
-        {
-          label: title,
-          name: templateName,
-          mediaHeight: value1,
-          media: media,
-          description: value,
-          buttons: button?.actions,
-        })
-      );
+      updateNodeLabel(selectedNode.id, {
+        label: title,
+        name: templateName,
+        mediaHeight: value1,
+        media: media,
+        description: value,
+        buttons: button?.actions,
+      });
     }
-    console.log("discription1234", discription);
+    console.log("description", description);
   };
 
   const handleMediaChange = ({ fileList }: { fileList: UploadFile[] }) => {
@@ -194,10 +183,10 @@ export const richcard = ({ isEdit, data }: RichCardProps) => {
           updateNodeLabel(selectedNode.id, {
             media: mediaURL,
             mediaHeight: value1,
-            label: richCardButtons.title,
-            name: selectedNode.data.name,
-            description: richCardButtons.description,
-            buttons: richCardButtons.actions,
+            label: title || selectedNode.data.label, // Ensure title is preserved
+            name: templateName || selectedNode.data.name, // Preserve template name
+            description: description || selectedNode.data.description, // Ensure description is preserved
+            buttons: button.actions,
           });
         }
       } else if (file.status === "error") {
@@ -218,23 +207,20 @@ export const richcard = ({ isEdit, data }: RichCardProps) => {
   function handleChange2(value: string) {
     setTitle(value);
     if (selectedNode) {
-      updateNodeLabel(
-        (selectedNode.id,
-        {
-          label: value,
-          name: templateName,
-          mediaHeight: value1,
-          media: media,
-          description: discription,
-          buttons: button?.actions,
-        })
-      );
+      updateNodeLabel(selectedNode.id, {
+        label: value,
+        name: templateName,
+        mediaHeight: value1,
+        media: media,
+        description: description,
+        buttons: button?.actions,
+      });
     }
   }
 
   return (
     <>
-      <div className="p-2 font-semibold flex">
+      <div className="p-2 font-semibold flex sticky top-0 bg-white z-10">
         <button onClick={() => setSelectedNode(null)}>
           <ArrowLeft />
         </button>
@@ -253,6 +239,7 @@ export const richcard = ({ isEdit, data }: RichCardProps) => {
             style={{ marginBottom: "10px" }}
           >
             <Input
+              variant="filled"
               placeholder="Template Name"
               defaultValue={selectedNode?.data?.name}
               onChange={(e) => {
@@ -262,6 +249,7 @@ export const richcard = ({ isEdit, data }: RichCardProps) => {
           </Form.Item>
           <Form.Item label="Title" style={{ marginBottom: "10px" }}>
             <Input
+              variant="filled"
               placeholder="Title"
               defaultValue={selectedNode?.data.label || ""}
               onChange={(e) => handleChange2(e.target.value)}
@@ -271,6 +259,8 @@ export const richcard = ({ isEdit, data }: RichCardProps) => {
           </Form.Item>
           <Form.Item label="Description" style={{ marginBottom: "10px" }}>
             <TextArea
+              variant="filled"
+              size="small"
               defaultValue={selectedNode?.data?.description || ""} // Use value instead of defaultValue
               placeholder="Description"
               rows={4}
@@ -281,6 +271,7 @@ export const richcard = ({ isEdit, data }: RichCardProps) => {
             <Col md={24}>
               <Form.Item
                 label="Media"
+                layout="vertical"
                 rules={[{ required: true, message: "Please select media" }]}
               >
                 <div
@@ -293,14 +284,20 @@ export const richcard = ({ isEdit, data }: RichCardProps) => {
                     justifyContent: "center",
                     marginTop: 10,
                     cursor: "pointer",
-                    padding: media ? "50px 0px" : "50px 0px",
+                    padding: media ? "15px 0px" : "50px 0px",
                   }}
                   onClick={() => {
                     setMediaModal(true);
                   }}
                 >
                   {media ? (
-                    <div style={{ position: "relative" }}>
+                    <div
+                      style={{
+                        position: "relative",
+                        alignItems: "center",
+                        height: "120px",
+                      }}
+                    >
                       <img
                         src={media}
                         alt="avatar"
@@ -353,7 +350,7 @@ export const richcard = ({ isEdit, data }: RichCardProps) => {
                     <div
                       style={{
                         border: "1px solid #D9D9D9",
-                        padding: "10px 15px",
+                        padding: "7px 7px",
                         borderRadius: "8px",
                         textAlign: "left",
                       }}
@@ -363,7 +360,7 @@ export const richcard = ({ isEdit, data }: RichCardProps) => {
                     <div
                       style={{
                         border: "1px solid #D9D9D9",
-                        padding: "10px 15px",
+                        padding: "7px 7px",
                         borderRadius: "8px",
                         textAlign: "left",
                       }}
@@ -373,7 +370,7 @@ export const richcard = ({ isEdit, data }: RichCardProps) => {
                     <div
                       style={{
                         border: "1px solid #D9D9D9",
-                        padding: "10px 15px",
+                        padding: "7px 7px",
                         borderRadius: "8px",
                         textAlign: "left",
                       }}
@@ -390,7 +387,7 @@ export const richcard = ({ isEdit, data }: RichCardProps) => {
               <Addbutton
                 textareaValue={textareaValue}
                 templateName={templateName}
-                discription={discription}
+                description={description}
                 media={media}
                 title={title}
                 button={button.actions}

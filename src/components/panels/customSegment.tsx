@@ -1,6 +1,10 @@
 import { CloseOutlined } from "@ant-design/icons";
 import { Col, Popconfirm, Row, Space, Tag } from "antd";
 import React, { useState } from "react";
+import { shallow } from "zustand/shallow";
+import useStore from "@/config/store";
+
+
 
 interface customSegmentProps {
   options: string[];
@@ -21,13 +25,36 @@ const customSegment: React.FC<customSegmentProps> = ({
   setRichCardCarousels,
   richCardCarousels,
   previewImage,
+  cardIndex,
+  setCardIndex
 }) => {
-  const [selectedValue, setSelectedValue] = useState<number>(0);
+  const selector = (state: {
+    selectedNode: Node | null;
+    updateNodeLabel: (
+      nodeId: string,
+      nodeVal: { richCardCarousels: RichCardButtonsState[] }
+    ) => void;
+    setSelectedNode: (node: Node | null) => void;
+  }) => ({
+    selectedNode: state.selectedNode,
+    updateNodeLabel: state.updateNodeLabel,
+    setSelectedNode: state.setSelectedNode,
+  });
+  const { selectedNode, updateNodeLabel, setSelectedNode } = useStore(
+    selector,
+    shallow
+  );
+  console.log("selectedNode456-->",selectedNode);
+  
+  // const [selectedValue, setSelectedValue] = useState<number>(0);
   const [close, setClose] = useState<boolean>(false);
+console.log("segment-->",cardIndex);
 
   const handleSelect = (option: number) => {
+    console.log("option-->",option);
+    
     if (!close) {
-      setSelectedValue(option);
+      setCardIndex(option);
       onChange(option);
     }
   };
@@ -42,16 +69,16 @@ const customSegment: React.FC<customSegmentProps> = ({
       setPreviewImage(images);
       setOptions(cards.map((_, i) => `Card ${i + 1}`));
 
-      if (index === 0 && selectedValue === index) {
-        setSelectedValue(index);
-      } else if (selectedValue < index) {
-        setSelectedValue(selectedValue);
-      } else if (index < selectedValue) {
-        setSelectedValue(selectedValue - 1);
-      } else if (selectedValue === index && options.length - 1 === index) {
-        setSelectedValue(selectedValue - 1);
-      } else if (selectedValue === index) {
-        setSelectedValue(selectedValue);
+      if (index === 0 && cardIndex === index) {
+        setCardIndex(index);
+      } else if (cardIndex < index) {
+        setCardIndex(cardIndex);
+      } else if (index < cardIndex) {
+        setCardIndex(cardIndex - 1);
+      } else if (cardIndex === index && options.length - 1 === index) {
+        setCardIndex(cardIndex - 1);
+      } else if (cardIndex === index) {
+        setCardIndex(cardIndex);
       }
     }
   };
@@ -91,11 +118,11 @@ const customSegment: React.FC<customSegmentProps> = ({
                   )
                 }
                 style={{
-                  border: selectedValue === index ? "2px solid #91caff" : "",
+                  border: cardIndex === index ? "2px solid #91caff" : "",
                   cursor: "pointer",
                   fontSize: 14,
                   margin: "0",
-                  backgroundColor: selectedValue === index ? "#fff" : "#fff",
+                  backgroundColor: cardIndex === index ? "#fff" : "#fff",
                   color: "#000",
                   zIndex: 1,
                   borderRadius: 5,

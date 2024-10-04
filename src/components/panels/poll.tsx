@@ -1,5 +1,5 @@
 import useStore from "@/config/store";
-import {ConfigProvider, Radio, Slider } from "antd";
+import { ConfigProvider, Radio, Slider } from "antd";
 import { ArrowLeft } from "lucide-react";
 import { Node } from "reactflow";
 import { shallow } from "zustand/shallow";
@@ -26,7 +26,7 @@ export const poll = () => {
   if (!selectedNode) return null;
   return (
     <>
-      <div className="p-2 font-semibold flex">
+      <div className="p-2 font-semibold flex sticky top-0 bg-white z-10">
         <button
           onClick={() => {
             setSelectedNode(null);
@@ -47,7 +47,7 @@ export const poll = () => {
           className="block text-sm font-medium text-start text-gray-700"
           htmlFor="message"
         >
-         {selectedNode.type === "textWithButtonNode"
+          {selectedNode.type === "textWithButtonNode"
             ? "Text with Button"
             : "Message"}
         </label>
@@ -63,33 +63,32 @@ export const poll = () => {
           />
         </div>
         <div className="py-2 px-3 min-h-[32px]">
-			<ConfigProvider
-			  theme={{
-				components: {
-				  Slider: {
-					railSize: 12,
-					borderRadiusXS: 49,
-					controlHeight: 0,
-					handleSize: 9,
-					controlHeightLG: 50,
-				  },
-				},
-			  }}
-			>
-			  <div className="conversation">
-				<div className="conversation-container">
-				  <div className="message received">
-					<Radio defaultChecked>Yes</Radio>
-					<Slider value={10} />
-					<Radio>No</Radio>
-					<Slider value={15} />
-				  </div>
-				</div>
-			  </div>
-			</ConfigProvider>
-		  </div>
+          <ConfigProvider
+            theme={{
+              components: {
+                Slider: {
+                  railSize: 12,
+                  borderRadiusXS: 49,
+                  controlHeight: 0,
+                  handleSize: 9,
+                  controlHeightLG: 50,
+                },
+              },
+            }}
+          >
+            <div className="conversation">
+              <div className="conversation-container">
+                <div className="message received">
+                  <Radio defaultChecked>Yes</Radio>
+                  <Slider value={10} />
+                  <Radio>No</Radio>
+                  <Slider value={15} />
+                </div>
+              </div>
+            </div>
+          </ConfigProvider>
+        </div>
       </div>
-     
     </>
   );
 };

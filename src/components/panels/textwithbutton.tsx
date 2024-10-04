@@ -1,17 +1,18 @@
 import useStore from "@/config/store";
-import { Form, Input } from "antd";
+import { Form, Input, Typography } from "antd";
 import { useState, useEffect } from "react";
 import { Node } from "reactflow";
 import { shallow } from "zustand/shallow";
 import { ArrowLeft } from "lucide-react";
 import Addbutton, { ActionData } from "./Addbutton";
+
 const { TextArea } = Input;
 
 const selector = (state: {
   selectedNode: Node | null;
   updateNodeLabel: (
     nodeId: string,
-    nodeData: { label: string; discription: string; buttons: ActionData[] }
+    nodeData: { label: string; name: string; discription: string; buttons: ActionData[] }
   ) => void;
   setSelectedNode: (node: Node | null) => void;
 }) => ({
@@ -25,7 +26,7 @@ export const TextWithPanel: React.FC = () => {
     selector,
     shallow
   );
-  const [cardIndex] = useState(0);
+
   const [textareaValue, setTextareaValue] = useState<string>("");
   const [templateName, setTemplateName] = useState<string>("");
   const [title, setTitle] = useState<string>("");
@@ -44,32 +45,24 @@ export const TextWithPanel: React.FC = () => {
   useEffect(() => {
     if (selectedNode) {
       setTextareaValue(selectedNode.data.label || "");
-    }
-  }, [selectedNode]);
-
-  useEffect(() => {
-    if (selectedNode?.data) {
-      setTextareaValue(selectedNode.data.label || "");
       setTemplateName(selectedNode.data.name || "");
       setDiscription(selectedNode.data.discription || "");
-      console.log("discription", selectedNode);
       setTitle(selectedNode.data.label || "");
     }
   }, [selectedNode]);
 
-  function  handleChange2(value: string) {
-    console.log("value", value);
-    setTitle(value);
+  const handleChange = (value: string) => {
+    setTextareaValue(value);
+    setTitle(value); // Update title as well
     if (selectedNode) {
       updateNodeLabel(selectedNode.id, {
         label: value,
         name: templateName,
-        discription: discription,
-        buttons: button?.actions,
+        discription,
+        buttons: button.actions,
       });
     }
-    console.log("button and discription", button, discription);
-  }
+  };
 
   const handleTemplateNameChange = (value: string) => {
     setTemplateName(value);
@@ -84,10 +77,10 @@ export const TextWithPanel: React.FC = () => {
   };
 
   if (!selectedNode) return null;
-  console.log("_buttons", button);
+
   return (
     <>
-      <div className="p-2 font-semibold flex">
+      <div className="p-2 font-semibold flex sticky top-0 bg-white z-10">
         <button onClick={() => setSelectedNode(null)}>
           <ArrowLeft />
         </button>
@@ -103,6 +96,7 @@ export const TextWithPanel: React.FC = () => {
           <Form.Item label="Template Name" style={{ marginBottom: "10px" }}>
             <Input
               value={templateName}
+              variant="filled"
               placeholder="Template Name"
               onChange={(e) => handleTemplateNameChange(e.target.value)}
             />
@@ -110,9 +104,12 @@ export const TextWithPanel: React.FC = () => {
 
           <Form.Item label="Message" style={{ marginBottom: "10px" }}>
             <TextArea
-              defaultValue={selectedNode?.data?.label}
-              onChange={(e) => handleChange2(e.target.value)}
+              variant="filled"
+            size="small"
+              value={textareaValue} // Changed to value
+              onChange={(e) => handleChange(e.target.value)}
               rows={4}
+              placeholder="Enter your message here"
             />
           </Form.Item>
         </Form>
@@ -124,7 +121,6 @@ export const TextWithPanel: React.FC = () => {
             templateName={templateName}
             button={button.actions}
             setButton={setButton}
-            cardIndex={cardIndex}
           />
         </div>
       </div>

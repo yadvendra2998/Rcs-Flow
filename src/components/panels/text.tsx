@@ -1,5 +1,6 @@
 import useStore from "@/config/store";
 import { Form, Input } from "antd";
+import TextArea from "antd/es/input/TextArea";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { Node } from "reactflow";
@@ -24,7 +25,7 @@ export const TextPanel = () => {
   const [title, setTitle] = useState<string>(selectedNode?.data.label);
 
   function handleChange(value: string) {
-    setTitle(value)
+    setTitle(value);
     if (selectedNode) {
       updateNodeLabel(selectedNode.id, {
         label: value,
@@ -44,9 +45,10 @@ export const TextPanel = () => {
   };
 
   if (!selectedNode) return null;
+
   return (
     <>
-      <div className="p-2 font-semibold flex">
+      <div className="p-2 font-semibold flex sticky top-0 bg-white z-10">
         <button
           onClick={() => {
             setSelectedNode(null);
@@ -65,30 +67,37 @@ export const TextPanel = () => {
       <div className="p-2 mt-3">
         <label
           className="block text-sm font-medium text-start text-gray-700"
-          htmlFor="message">
+          htmlFor="message"
+        >
           {selectedNode.type === "textWithButtonNode"
             ? "Text with Button"
             : "Message"}
         </label>
+        <Form layout="vertical">
         <Form.Item label="Template Name" style={{ marginBottom: "10px" }}>
           <Input
+            variant="filled"
             defaultValue={selectedNode?.data?.name}
             placeholder="Template Name"
             onChange={(e) => {
-              handleTemplateNameChange(e.target.value);}}
+              handleTemplateNameChange(e.target.value);
+            }}
           />
         </Form.Item>
-        <div className="mt-1">
-          <textarea
+        <Form.Item label="Message" style={{ marginBottom: "10px" }}>
+          <TextArea
             rows={4}
+            size="small"
             key={selectedNode?.id}
             defaultValue={selectedNode?.data.label}
+            placeholder="Template Name"
             name="message"
             id="message"
             onChange={(e) => handleChange(e.target.value)}
             className="border block w-full border-gray-300 rounded-md sm:text-sm p-2"
           />
-        </div>
+        </Form.Item>
+        </Form>
       </div>
     </>
   );

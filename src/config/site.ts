@@ -5,9 +5,9 @@ export const nodesConfig = {
   initialNodes: [
     {
       id: "1",
-      type: "textNode",
+      type: "textWithButtonNode",
       data: {
-        label: "wow, that was a great video",
+        label: "Text with Button",
         isInitial: true,
         button: {
           label: "Start",

@@ -15,6 +15,8 @@ import useStore from "./config/store";
 import DownloadButton from "./components/panels/DownloadButton";
 import { handleDragOver, handleOnDrop } from "./lib/utils";
 import "./App.css";
+import image from './assets/freepik-new-project-20241002121122DMfD.png'
+
 
 interface CustomNode extends Node {
   id: string;
@@ -117,6 +119,7 @@ export default function App() {
           <ReactFlow
             nodes={nodes}
             edges={edges}
+            
             onNodesChange={onNodesChange}
             onNodesDelete={onNodesDelete}
             onEdgesChange={onEdgesChange}
@@ -137,11 +140,11 @@ export default function App() {
             nodeTypes={nodesConfig.nodeTypes}
           >
             <Controls />
-            <DownloadButton />
+            {/* <DownloadButton /> */}
             <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           </ReactFlow>
         </div>
-        <div className="w-[303px]">
+        <div className="w-[303px]" >
           <Panel />
         </div>
       </main>

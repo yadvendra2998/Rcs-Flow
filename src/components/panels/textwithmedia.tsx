@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useStore from "@/config/store";
 import { CloseOutlined, UploadOutlined } from "@ant-design/icons";
-import { Button, Col, Form, message, Row, Upload, UploadFile } from "antd";
+import { Button, Col, Form, Input, message, Row, Upload, UploadFile } from "antd";
 import { Node } from "reactflow";
 import { shallow } from "zustand/shallow";
 import { ArrowLeft } from "lucide-react";
@@ -26,8 +26,11 @@ export const TextWithMedia = ({ isEdit, data }: RichCardProps) => {
     selector,
     shallow
   );
+  const [templateName, setTemplateName] = useState<string>("");
   const [media, setMedia] = useState<string | null>(null);
   const [mediaModal, setMediaModal] = useState(false);
+
+  const [title, setTitle] = useState<string>("");
 
   useEffect(() => {
     if (selectedNode) {
@@ -36,6 +39,7 @@ export const TextWithMedia = ({ isEdit, data }: RichCardProps) => {
       } else {
         setMedia(null);
       }
+      setTitle(selectedNode.data.label || "");
     }
   }, [selectedNode]);
 
@@ -75,9 +79,19 @@ export const TextWithMedia = ({ isEdit, data }: RichCardProps) => {
     }
   };
 
+
+  const handleTemplateNameChange = (value: string) => {
+    setTemplateName(value);
+    if (selectedNode) {
+      updateNodeLabel(selectedNode.id, {
+        label: title,
+        name: value,
+      });
+    }
+  };
   return (
     <>
-      <div className="p-2 font-semibold flex">
+      <div className="p-2 font-semibold flex sticky top-0 bg-white z-10">
         <button onClick={() => setSelectedNode(null)}>
           <ArrowLeft />
         </button>
@@ -88,6 +102,15 @@ export const TextWithMedia = ({ isEdit, data }: RichCardProps) => {
       <div className="p-2 mt-3">
         <Row>
           <Col md={24}>
+          <Form layout="vertical">
+          <Form.Item label="Template Name" style={{ marginBottom: "10px" }}>
+            <Input
+              variant="filled"
+              value={templateName}
+              placeholder="Template Name"
+              onChange={(e) => handleTemplateNameChange(e.target.value)}
+            />
+          </Form.Item>
             <Form.Item
               name={"media"}
               label={"Media"}
@@ -157,6 +180,7 @@ export const TextWithMedia = ({ isEdit, data }: RichCardProps) => {
                 )}
               </div>
             </Form.Item>
+            </Form>
           </Col>
         </Row>
       </div>

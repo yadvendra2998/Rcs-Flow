@@ -33,7 +33,7 @@ export interface ActionData {
 interface AddButtonProps {
   textareaValue: string;
   templateName: string;
-  discription: string;
+  description: string;
   title: string;
   button: ActionData[];
   setButton: (state: any) => void;
@@ -55,11 +55,11 @@ const selector = (state: {
 const Addbutton: React.FC<AddButtonProps> = ({
   textareaValue,
   templateName,
-  discription,
+  description,
   title,
   setButton,
   cardIndex,
-  button = [], // Ensure `button` is an array by default
+  button = [],
   setRichCardCarousels,
   richCardCarousels,
 }) => {
@@ -120,7 +120,7 @@ const Addbutton: React.FC<AddButtonProps> = ({
             updateNodeLabel(selectedNode.id, {
               label: title || textareaValue,
               name: templateName,
-              description: discription,
+              description: description,
               richCardCarousels: updated,
               buttons: actions.map((action) => ({
                 title: action.title || "Untitled",
@@ -136,7 +136,7 @@ const Addbutton: React.FC<AddButtonProps> = ({
           updateNodeLabel(selectedNode.id, {
             label: title || textareaValue,
             name: templateName,
-            description: discription,
+            description: description,
             buttons: actions.map((action) => ({
               title: action.title || "Untitled",
               type: action.type || "quick",
@@ -185,18 +185,18 @@ const Addbutton: React.FC<AddButtonProps> = ({
                   richCardCarousels: updated,
                   name: templateName,
                   label: title || textareaValue,
-                  description: discription,
+                  description: description,
                   buttons: buttonData,
                 });
+                console.log("dartaa",description)
               }
-
               return updated;
             });
           } else {
             updateNodeLabel(selectedNode.id, {
               label: title || textareaValue,
               name: templateName,
-              description: discription,
+              description: description,
               buttons: buttonData,
             });
           }
@@ -235,7 +235,7 @@ const Addbutton: React.FC<AddButtonProps> = ({
               richCardCarousels: updated,
               name: templateName,
               label: title,
-              description: discription,
+              description: description,
               buttons: updatedButtonData,
             });
 
@@ -245,7 +245,7 @@ const Addbutton: React.FC<AddButtonProps> = ({
           updateNodeLabel(selectedNode.id, {
             label: title,
             name: templateName,
-            description: discription,
+            description: description,
             buttons: updatedButtonData,
           });
         }
@@ -257,7 +257,7 @@ const Addbutton: React.FC<AddButtonProps> = ({
 
   console.log("index",cardIndex);
   return (
-    <div className="p-2 mt-3">
+    <div className=" mt-3">
       <Form layout="vertical">
         <Space
           style={{
@@ -295,7 +295,6 @@ const Addbutton: React.FC<AddButtonProps> = ({
                     <Select
                       value={btn.type}
                       onChange={(value) => handleChange(index, "type", value)}
-                      size="large"
                       style={{ width: "100%", textAlign: "left" }}
                       options={[
                         { value: "quick", label: "Quick Reply" },
@@ -311,10 +310,11 @@ const Addbutton: React.FC<AddButtonProps> = ({
                   <Form.Item
                     name={`button_title_${cardIndex}_${index}`}
                     label="Title"
-                    style={{ marginBottom: "10px" }}
+                    style={{ marginBottom: "10px",textAlign: "left"  }}
                     rules={[
                       {
                         required: true,
+                        type:"string",
                         message: "Please enter title",
                       },
                       {
@@ -324,14 +324,15 @@ const Addbutton: React.FC<AddButtonProps> = ({
                     ]}
                   >
                     <Input
+                    variant="filled"
                       onChange={(e) =>
                         handleChange(index, "title", e.target.value)
                       }
-                      size="large"
                       // defaultValue={btn.title}
                       placeholder="Enter Title"
                       value={btn.title}
                       maxLength={25}
+                      showCount={true}
                     />
                   </Form.Item>
 
@@ -340,6 +341,7 @@ const Addbutton: React.FC<AddButtonProps> = ({
                   <Col md={24}>
                     <Form.Item label="Phone Number">
                       <Input
+                        variant="filled"
                         value={btn.phoneNumber}
                         onChange={(e) =>
                           handleChange(index, "phoneNumber", e.target.value)
@@ -354,6 +356,7 @@ const Addbutton: React.FC<AddButtonProps> = ({
                   <Col md={24}>
                     <Form.Item label="URL">
                       <Input
+                        variant="filled"
                         value={btn.payload}
                         onChange={(e) =>
                           handleChange(index, "payload", e.target.value)
@@ -369,6 +372,7 @@ const Addbutton: React.FC<AddButtonProps> = ({
                     <Col md={24}>
                       <Form.Item label="Label">
                         <Input
+                          variant="filled"
                           value={btn.payload}
                           onChange={(e) =>
                             handleChange(index, "payload", e.target.value)
@@ -411,6 +415,7 @@ const Addbutton: React.FC<AddButtonProps> = ({
                     <Col md={24}>
                       <Form.Item label="Label">
                         <Input
+                          variant="filled"
                           value={btn.payload}
                           onChange={(e) =>
                             handleChange(index, "payload", e.target.value)
@@ -454,4 +459,4 @@ const Addbutton: React.FC<AddButtonProps> = ({
   );
 };
 
-export default Addbutton; 
+export default Addbutton;

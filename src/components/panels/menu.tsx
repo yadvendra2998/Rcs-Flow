@@ -65,7 +65,7 @@ export const menu = () => {
 
   return (
     <>
-      <div className="p-2 font-semibold flex">
+      <div className="p-2 font-semibold flex sticky top-0 bg-white z-10">
         <button
           onClick={() => {
             setSelectedNode(null);
