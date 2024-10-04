@@ -123,7 +123,7 @@
 //         console.error(Node with ID ${nodeId} does not exist.);
 //         return state; // Early return if the node doesn't exist
 //       }
-  
+
 //       return {
 //         nodes: state.nodes.map((node) => {
 //           if (node.id === nodeId) {
@@ -146,7 +146,6 @@
 //       };
 //     });
 //   },
-  
 
 //   updateNodeMedia: (nodeId: string, media: UploadFile[]) => {
 //     set({
@@ -177,12 +176,7 @@
 
 // export default useStore;
 
-
-
 //fddfdffddfdffg
-
-
-
 
 // import {
 //   Connection,
@@ -340,7 +334,6 @@
 //     });
 //   },
 
-
 //   updateInitialNodeType: (type: string) => {
 //     set((state) => {
 //       const updatedNodes = state.nodes.map((node) =>
@@ -352,13 +345,6 @@
 // }));
 
 // export default useStore;
-
-
-
-
-
-
-
 
 import {
   Connection,
@@ -377,11 +363,33 @@ import { create } from "zustand";
 import { nodesConfig } from "./site";
 import { UploadFile } from "antd";
 
+export type Buttons = {
+  id: number;
+  type: string;
+  title: string;
+  payload: string;
+};
+
+export type RichCardCarousel = {
+  orientation: string;
+  title: string;
+  description: string;
+  media: string;
+  mediaHeight: string;
+  actions: Buttons[];
+};
+
 export type NodeData = {
   label: string;
   isInitial?: boolean;
   media?: UploadFile[];
+  name: string;
+  description: string;
+  buttons: Buttons[];
+  mediaHeight: string;
+  richCardCarousels: RichCardCarousel[];
 };
+
 export type NodeTypes = "textNode";
 type RFState = {
   richCardData: any;
@@ -403,6 +411,8 @@ type RFState = {
 };
 
 const useStore = create<RFState>((set, get) => ({
+  richCardData: null,
+  setRichCardData: (data: any) => set({ richCardData: data }),
   nodes: nodesConfig.initialNodes,
   edges: nodesConfig.initialEdges,
   selectedNode: null,
@@ -485,7 +495,7 @@ const useStore = create<RFState>((set, get) => ({
         console.error(`Node with ID ${nodeId} does not exist.`);
         return state; // Early return if the node doesn't exist
       }
-  
+
       return {
         nodes: state.nodes.map((node) => {
           if (node.id === nodeId) {
@@ -499,7 +509,8 @@ const useStore = create<RFState>((set, get) => ({
                 name: nodeVal.name ?? node.data.name,
                 description: nodeVal.description ?? node.data.description,
                 mediaHeight: nodeVal.mediaHeight ?? node.data.mediaHeight,
-                richCardCarousels: nodeVal.richCardCarousels ?? node.data.richCardCarousels,
+                richCardCarousels:
+                  nodeVal.richCardCarousels ?? node.data.richCardCarousels,
               },
             };
           }
