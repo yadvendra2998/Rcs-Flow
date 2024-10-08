@@ -1,10 +1,9 @@
 import { CloseOutlined } from "@ant-design/icons";
 import { Col, Popconfirm, Row, Space, Tag } from "antd";
 import React, { useState } from "react";
-import { shallow } from "zustand/shallow";
-import useStore from "@/config/store";
-
-
+// import { shallow } from "zustand/shallow";
+// import useStore from "@/config/store";
+import { RichCardButtonsState } from "./richcardcarousel";
 
 interface customSegmentProps {
   options: string[];
@@ -12,8 +11,8 @@ interface customSegmentProps {
   onChange: (option: number) => void;
   setOptions: (options: string[]) => void;
   setPreviewImage: (images: string[]) => void;
-  setRichCardCarousels: (carousels: any[]) => void; // Update the type if you have a specific type for carousels
-  richCardCarousels: any[]; // Update the type if you have a specific type for carousels
+  setRichCardCarousels: (carousels: RichCardButtonsState[]) => void; // Update the type if you have a specific type for carousels
+  richCardCarousels: RichCardButtonsState[]; // Update the type if you have a specific type for carousels
   previewImage: string[];
 }
 
@@ -25,36 +24,34 @@ const customSegment: React.FC<customSegmentProps> = ({
   setRichCardCarousels,
   richCardCarousels,
   previewImage,
-  cardIndex,
-  setCardIndex
+  value,
 }) => {
-  const selector = (state: {
-    selectedNode: Node | null;
-    updateNodeLabel: (
-      nodeId: string,
-      nodeVal: { richCardCarousels: RichCardButtonsState[] }
-    ) => void;
-    setSelectedNode: (node: Node | null) => void;
-  }) => ({
-    selectedNode: state.selectedNode,
-    updateNodeLabel: state.updateNodeLabel,
-    setSelectedNode: state.setSelectedNode,
-  });
-  const { selectedNode, updateNodeLabel, setSelectedNode } = useStore(
-    selector,
-    shallow
-  );
-  console.log("selectedNode456-->",selectedNode);
-  
+  // const selector = (state: {
+  //   selectedNode: Node | null;
+  //   updateNodeLabel: (
+  //     nodeId: string,
+  //     nodeVal: { richCardCarousels: RichCardButtonsState[] }
+  //   ) => void;
+  //   setSelectedNode: (node: Node | null) => void;
+  // }) => ({
+  //   selectedNode: state.selectedNode,
+  //   updateNodeLabel: state.updateNodeLabel,
+  //   setSelectedNode: state.setSelectedNode,
+  // });
+  // const { selectedNode, updateNodeLabel, setSelectedNode } = useStore(
+  //   selector,
+  //   shallow
+  // );
+
   // const [selectedValue, setSelectedValue] = useState<number>(0);
   const [close, setClose] = useState<boolean>(false);
-console.log("segment-->",cardIndex);
+  // console.log("segment-->", value);
 
   const handleSelect = (option: number) => {
-    console.log("option-->",option);
-    
+    // console.log("option-->", option);
+
     if (!close) {
-      setCardIndex(option);
+      // setCardIndex(option);
       onChange(option);
     }
   };
@@ -69,16 +66,16 @@ console.log("segment-->",cardIndex);
       setPreviewImage(images);
       setOptions(cards.map((_, i) => `Card ${i + 1}`));
 
-      if (index === 0 && cardIndex === index) {
-        setCardIndex(index);
-      } else if (cardIndex < index) {
-        setCardIndex(cardIndex);
-      } else if (index < cardIndex) {
-        setCardIndex(cardIndex - 1);
-      } else if (cardIndex === index && options.length - 1 === index) {
-        setCardIndex(cardIndex - 1);
-      } else if (cardIndex === index) {
-        setCardIndex(cardIndex);
+      if (index === 0 && value === index) {
+        onChange(index);
+      } else if (value < index) {
+        onChange(value);
+      } else if (index < value) {
+        onChange(value - 1);
+      } else if (value === index && options.length - 1 === index) {
+        onChange(value - 1);
+      } else if (value === index) {
+        onChange(value);
       }
     }
   };
@@ -90,7 +87,7 @@ console.log("segment-->",cardIndex);
   return (
     <div>
       <Row gutter={[16, 24]}>
-        {options.map((option, index) => (
+        {options?.map((option, index) => (
           // <Flex gap={"large"}>
           <Col md={6} key={option}>
             <Space size={"large"}>
@@ -118,15 +115,16 @@ console.log("segment-->",cardIndex);
                   )
                 }
                 style={{
-                  border: cardIndex === index ? "2px solid #91caff" : "",
+                  border: value === index ? "2px solid #91caff" : "",
                   cursor: "pointer",
                   fontSize: 14,
                   margin: "0",
-                  backgroundColor: cardIndex === index ? "#fff" : "#fff",
+                  backgroundColor: value === index ? "#fff" : "#fff",
                   color: "#000",
                   zIndex: 1,
                   borderRadius: 5,
                 }}
+                
               >
                 {option}
               </Tag>

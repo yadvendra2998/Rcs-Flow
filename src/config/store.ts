@@ -376,11 +376,18 @@ import {
 import { create } from "zustand";
 import { nodesConfig } from "./site";
 import { UploadFile } from "antd";
+import { RichCardButtonsState } from "@/components/panels/richcardcarousel";
+import { ActionData } from "@/components/panels/Addbutton";
 
 export type NodeData = {
   label: string;
   isInitial?: boolean;
+  name?: string;
   media?: UploadFile[];
+  buttons?: ActionData[];  // Specify the correct type based on your application
+  description?: string;
+  mediaHeight?: string;
+  richCardCarousels?: RichCardButtonsState[]; // Specify the correct type
 };
 export type NodeTypes = "textNode";
 
@@ -407,7 +414,7 @@ const useStore = create<RFState>((set, get) => ({
   nodes: nodesConfig.initialNodes,
   edges: nodesConfig.initialEdges,
   selectedNode: null,
-  startNodeId: null,
+  startNodeId: "" | null,
 
   setSelectedNode: (node: Node | null) => {
     set({ selectedNode: node });

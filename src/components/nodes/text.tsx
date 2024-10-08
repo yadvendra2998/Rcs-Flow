@@ -30,6 +30,7 @@ import React, { memo, useState } from "react";
 import { Edge, Handle, Node, Position, getConnectedEdges } from "reactflow";
 import { shallow } from "zustand/shallow";
 import { cn } from "@/lib/utils";
+
 const selector = (state: {
   setStartNode: any;
   startNodeId: any;
@@ -47,7 +48,6 @@ const selector = (state: {
   startNodeId: state.startNodeId,
   setStartNode: state.setStartNode,
 });
-
 
 const getTitleByType = (type: any) => {
   switch (type) {
@@ -97,8 +97,8 @@ export const TextNode = memo((node: Node) => {
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [sourceConnectable, setSourceConnectable] = React.useState(true);
   const { data, selected, id, type } = node;
-  console.log("123",data);
-  
+  console.log("123", data);
+
   const alledges = getConnectedEdges([node], edges);
 
   React.useEffect(() => {
@@ -147,13 +147,13 @@ export const TextNode = memo((node: Node) => {
 
   const getImageWidth = () => {
     if (data.mediaHeight === "small") {
-      return 100;
+      return 80;
     } else if (data.mediaHeight === "medium") {
-      return 200;
-    } else if (data.mediaHeight === "tall") {
-      return 250;
-    } else {
       return 100;
+    } else if (data.mediaHeight === "tall") {
+      return 150;
+    } else {
+      return 80;
     }
   };
 
@@ -168,9 +168,8 @@ export const TextNode = memo((node: Node) => {
     switch (type) {
       case "textWithButtonNode":
         const buttonsToRender =
-          data.buttons && data.buttons.length > 0
-            ? data.buttons
-            : [defaultButton];
+          data?.buttons?.length > 0 ? data?.buttons : [defaultButton];
+        console.log("buttons", buttonsToRender);
         return (
           <div className="py-2 px-3 min-h-[32px]">
             <div>
@@ -200,14 +199,14 @@ export const TextNode = memo((node: Node) => {
                           style={{ background: "#adafce", color: "black" }}
                           icon={<MessageOutlined />}
                         >
-                           {/* {!data.isInitial && !disabledNodes.has(node.id) && ( */}
+                          {/* {!data.isInitial && !disabledNodes.has(node.id) && ( */}
                           <Handle
                             type="source"
                             id={`button-${index}`}
                             position={Position.Right}
                             isConnectable={true}
                           />
-                        {/* )} */}
+                          {/* )} */}
                           {button.title || "Untitled"}
                         </Button>
                       ) : (
@@ -261,6 +260,7 @@ export const TextNode = memo((node: Node) => {
             </div>
           </div>
         );
+
       case "richcard":
         return (
           <>
@@ -290,17 +290,35 @@ export const TextNode = memo((node: Node) => {
                   }}
                 >
                   {data.description
-                    ? data.description.split("\n").map((line: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined, index: React.Key | null | undefined) => (
-                        <span key={index}>
-                          {line}
-                          <br />
-                        </span>
-                      ))
+                    ? data.description
+                        .split("\n")
+                        .map(
+                          (
+                            line:
+                              | string
+                              | number
+                              | boolean
+                              | React.ReactElement<
+                                  any,
+                                  string | React.JSXElementConstructor<any>
+                                >
+                              | Iterable<React.ReactNode>
+                              | React.ReactPortal
+                              | null
+                              | undefined,
+                            index: React.Key | null | undefined
+                          ) => (
+                            <span key={index}>
+                              {line}
+                              <br />
+                            </span>
+                          )
+                        )
                     : "No description available."}{" "}
                 </Typography.Text>
                 <div>
-                  {data.buttons && data.buttons.length > 0 ? (
-                    data.buttons.map((button: any, index: any) => (
+                  {data?.buttons?.length > 0 ? (
+                    data?.buttons?.map((button: any, index: any) => (
                       <React.Fragment key={index}>
                         {button.type === "quick" ? (
                           <Button
@@ -378,7 +396,24 @@ export const TextNode = memo((node: Node) => {
                       </React.Fragment>
                     ))
                   ) : (
-                    <></>
+                    <>
+                      <Button
+                        size="small"
+                        icon={<MessageOutlined />}
+                        block
+                        style={{
+                          background: "#adafce",
+                          color: "black",
+                        }}
+                      >
+                        <Handle
+                          type="source"
+                          position={Position.Right}
+                          isConnectable={true}
+                        />
+                        {defaultButton.title || "Untitled"}
+                      </Button>
+                    </>
                   )}
                 </div>
               </Card>
@@ -387,20 +422,16 @@ export const TextNode = memo((node: Node) => {
         );
 
       case "richcardcarousel":
-      {  const richCardCarouselButtons =
-          data.buttons && data.buttons.length > 0
-            ? data.buttons
-            : [defaultButton];}
         return (
           <>
             {Array.isArray(data?.richCardCarousels) &&
-            data.richCardCarousels.length > 0 ? (
-              <Flex direction="column" align="center">
-                {data.richCardCarousels.map((card: any, index: any) => {
+            data?.richCardCarousels?.length > 0 ? (
+              <Flex direction="column" align="center" gap={2}>
+                {data?.richCardCarousels?.map((card: any, index: any) => {
                   const imageWidth =
                     card?.mediaHeight === "short"
                       ? 80
-                      : card.mediaHeight === "medium"
+                      : card?.mediaHeight === "medium"
                       ? 100
                       : 150;
 
@@ -410,7 +441,7 @@ export const TextNode = memo((node: Node) => {
                         <div style={{ textAlign: "center" }}>
                           {card?.media ? (
                             <Image
-                              src={card.media}
+                              src={card?.media}
                               preview={false}
                               width={imageWidth}
                               alt="Richcard media"
@@ -423,7 +454,7 @@ export const TextNode = memo((node: Node) => {
                             />
                           )}
                         </div>
-                        <Typography.Text strong>{card.title}</Typography.Text>
+                        <Typography.Text strong>{card?.title}</Typography.Text>
                         <br />
                         {/* <Typography.Text>{card.description}</Typography.Text> */}
 
@@ -432,23 +463,39 @@ export const TextNode = memo((node: Node) => {
                             whiteSpace: "pre-wrap", // Preserve white space and line breaks
                           }}
                         >
-                          {card.description
-                            ? card.description
+                          {card?.description
+                            ? card?.description
                                 .split("\n")
-                                .map((line: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined, index: React.Key | null | undefined) => (
-                                  <span key={index}>
-                                    {line}
-                                    <br />
-                                  </span>
-                                ))
+                                .map(
+                                  (
+                                    line:
+                                      | string
+                                      | number
+                                      | boolean
+                                      | React.ReactElement<
+                                          any,
+                                          | string
+                                          | React.JSXElementConstructor<any>
+                                        >
+                                      | Iterable<React.ReactNode>
+                                      | React.ReactPortal
+                                      | null
+                                      | undefined,
+                                    index: React.Key | null | undefined
+                                  ) => (
+                                    <span key={index}>
+                                      {line}
+                                      <br />
+                                    </span>
+                                  )
+                                )
                             : "No description available."}{" "}
                           {/* Fallback text if description is undefined */}
                         </Typography.Text>
 
                         <div className="text-xs whitespace-pre-wrap">
-                          {Array.isArray(card.buttons) &&
-                          card.buttons.length > 0
-                            ? card.buttons.map((button: any, btnIndex: any) => (
+                          {Array.isArray(card?.button) && card?.button?.length > 0
+                            ? card?.button?.map((button: any, btnIndex: any) => (
                                 <React.Fragment key={btnIndex}>
                                   <Flex justify="space-around">
                                     {button.type === "quick" ? (
@@ -526,7 +573,7 @@ export const TextNode = memo((node: Node) => {
                                       </>
                                     )}
                                   </Flex>
-                                  {btnIndex < card.buttons.length - 1 && (
+                                  {btnIndex < card.button.length - 1 && (
                                     <div className="mt-2"></div>
                                   )}
                                 </React.Fragment>
@@ -550,6 +597,22 @@ export const TextNode = memo((node: Node) => {
                       />
                     </div>
                     <Typography.Text>No rich cards available</Typography.Text>
+                    <Button
+                      size="small"
+                      icon={<MessageOutlined />}
+                      block
+                      style={{
+                        background: "#adafce",
+                        color: "black",
+                      }}
+                    >
+                      <Handle
+                        type="source"
+                        position={Position.Right}
+                        isConnectable={true}
+                      />
+                      {defaultButton.title || "Untitled"}
+                    </Button>
                   </Card>
                   <Card>
                     <div style={{ textAlign: "center" }}>
@@ -560,6 +623,22 @@ export const TextNode = memo((node: Node) => {
                       />
                     </div>
                     <Typography.Text>No rich cards available</Typography.Text>
+                    <Button
+                      size="small"
+                      icon={<MessageOutlined />}
+                      block
+                      style={{
+                        background: "#adafce",
+                        color: "black",
+                      }}
+                    >
+                      <Handle
+                        type="source"
+                        position={Position.Right}
+                        isConnectable={true}
+                      />
+                      {defaultButton.title || "Untitled"}
+                    </Button>
                   </Card>
                 </Flex>
               </div>
@@ -628,7 +707,7 @@ export const TextNode = memo((node: Node) => {
     <Menu>
       <Menu.Item key="copy" onClick={handleCopy}>
         <Space>
-          <CopyOutlined style={{  fontSize: "20px" }} />
+          <CopyOutlined style={{ fontSize: "20px" }} />
           Copy
         </Space>
       </Menu.Item>
@@ -641,7 +720,7 @@ export const TextNode = memo((node: Node) => {
           cancelText="No"
         >
           <Space>
-            <DeleteOutlined style={{  fontSize: "20PX" }} />
+            <DeleteOutlined style={{ fontSize: "20PX" }} />
             Delete
           </Space>
         </Popconfirm>
@@ -656,7 +735,7 @@ export const TextNode = memo((node: Node) => {
           onClick={() => handleSetStartNode(node.id)}
         >
           <Space>
-            <FlagOutlined style={{  fontSize: "20PX" }} />
+            <FlagOutlined style={{ fontSize: "20PX" }} />
             Set start node
           </Space>
         </Menu.Item>
@@ -665,14 +744,12 @@ export const TextNode = memo((node: Node) => {
         <Space>
           {disabledNodes.has(node.id) ? (
             <>
-              <EyeOutlined
-                style={{  fontSize: "20px" }}
-              />
+              <EyeOutlined style={{ fontSize: "20px" }} />
               <span>Enable</span>
             </>
           ) : (
             <>
-              <EyeInvisibleOutlined style={{  fontSize: "20px" }} />
+              <EyeInvisibleOutlined style={{ fontSize: "20px" }} />
               <span>Disable</span>
             </>
           )}
@@ -691,15 +768,15 @@ export const TextNode = memo((node: Node) => {
         className={cn(
           "bg-white border-[1px] shadow-2xl border-transparent rounded-sm min-w-[200px] text-start",
           selected && "border-blue-500",
-          disabledNodes.has(node.id) && "opacity-50",
+          disabledNodes.has(node.id) && "opacity-50"
         )}
       >
         <div
           className="py-2 rounded-t-md px-3 text-sm font-semibold text-primary-foreground flex justify-between items-center"
           style={{ backgroundColor }}
         >
-          <span style={{ color }}>{data?.name || title}</span>
-          <Dropdown overlay={menu} trigger={["click"]} placement="topLeft" >
+          <span style={{ color }}>{data?.name ?? title}</span>
+          <Dropdown overlay={menu} trigger={["click"]} placement="topLeft">
             <MoreOutlined style={{ color: "#0f0505", fontSize: "18px" }} />
           </Dropdown>
         </div>

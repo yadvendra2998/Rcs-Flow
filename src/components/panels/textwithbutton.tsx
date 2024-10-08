@@ -4,15 +4,26 @@ import { useState, useEffect } from "react";
 import { Node } from "reactflow";
 import { shallow } from "zustand/shallow";
 import { ArrowLeft } from "lucide-react";
-import Addbutton, { ActionData } from "./Addbutton";
+import Addbutton from "./Addbutton";
 
 const { TextArea } = Input;
+interface ActionData {
+  id: number;
+  type: string;
+  title: string;
+  payload: string;
+}
 
 const selector = (state: {
   selectedNode: Node | null;
   updateNodeLabel: (
     nodeId: string,
-    nodeData: { label: string; name: string; discription: string; buttons: ActionData[] }
+    nodeData: {
+      label: string;
+      name: string;
+      discription: string;
+      buttons: ActionData[];
+    }
   ) => void;
   setSelectedNode: (node: Node | null) => void;
 }) => ({
@@ -48,6 +59,7 @@ export const TextWithPanel: React.FC = () => {
       setTemplateName(selectedNode.data.name || "");
       setDiscription(selectedNode.data.discription || "");
       setTitle(selectedNode.data.label || "");
+      // setButton({ actions: selectedNode?.data?.buttons || [] });
     }
   }, [selectedNode]);
 
@@ -105,7 +117,7 @@ export const TextWithPanel: React.FC = () => {
           <Form.Item label="Message" style={{ marginBottom: "10px" }}>
             <TextArea
               variant="filled"
-            size="small"
+              size="small"
               value={textareaValue} // Changed to value
               onChange={(e) => handleChange(e.target.value)}
               rows={4}

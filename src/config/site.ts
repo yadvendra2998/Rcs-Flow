@@ -9,9 +9,6 @@ export const nodesConfig = {
       data: {
         label: "Text with Button",
         isInitial: true,
-        button: {
-          label: "Start",
-        },
       },
       position: { x: 300, y: 400 },
     },
