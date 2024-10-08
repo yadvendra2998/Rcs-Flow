@@ -363,40 +363,21 @@ import { create } from "zustand";
 import { nodesConfig } from "./site";
 import { UploadFile } from "antd";
 
-export type Buttons = {
-  id: number;
-  type: string;
-  title: string;
-  payload: string;
-};
-
-export type RichCardCarousel = {
-  orientation: string;
-  title: string;
-  description: string;
-  media: string;
-  mediaHeight: string;
-  actions: Buttons[];
-};
-
 export type NodeData = {
   label: string;
   isInitial?: boolean;
+  name?: string;
   media?: UploadFile[];
-  name: string;
-  description: string;
-  buttons: Buttons[];
-  mediaHeight: string;
-  richCardCarousels: RichCardCarousel[];
 };
 
 export type NodeTypes = "textNode";
+
 type RFState = {
-  richCardData: any;
-  setRichCardData: any;
   nodes: Node[];
   edges: Edge[];
   selectedNode: Node | null;
+  startNodeId: string | null; // Ensure to specify the type
+  setStartNode: (id: string | null) => void;
   setNodes: (node: Node) => void;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
@@ -416,12 +397,10 @@ const useStore = create<RFState>((set, get) => ({
   nodes: nodesConfig.initialNodes,
   edges: nodesConfig.initialEdges,
   selectedNode: null,
+  startNodeId: "" | null,
 
   setSelectedNode: (node: Node | null) => {
-    set({
-      selectedNode: node,
-    });
-
+    set({ selectedNode: node });
     if (node === null) {
       const selectedNode = get().nodes.find((n) => n.selected === true);
       if (selectedNode) {
@@ -434,6 +413,17 @@ const useStore = create<RFState>((set, get) => ({
         ]);
       }
     }
+  },
+
+  setStartNode: (id: string | null) => {
+    set((state) => ({
+      startNodeId: id,
+      nodes: state.nodes.map((node) =>
+        node.id === id
+          ? { ...node, data: { ...node.data, isInitial: true } } // Set as starting node
+          : { ...node, data: { ...node.data, isInitial: false } } // Reset all other nodes
+      ),
+    }));
   },
 
   removeNode: (id) =>
@@ -483,10 +473,29 @@ const useStore = create<RFState>((set, get) => ({
   },
 
   onConnect: (connection: Connection) => {
-    set({
-      edges: addEdge(connection, get().edges),
-    });
+    const { edges } = get();
+    const willCreateLoop = (sourceId: string, targetId: string, allEdges: Edge[]): boolean => {
+      const findConnection = (nodeId: string, visited: Set<string>): boolean => {
+        if (visited.has(nodeId)) return false;
+        visited.add(nodeId);  
+        const connectedEdges = allEdges.filter(edge => edge.source === nodeId);
+        for (const edge of connectedEdges) {
+          if (edge.target === sourceId) return true;
+          if (findConnection(edge.target, visited)) return true;
+        }
+        return false;
+      };
+      return findConnection(targetId, new Set());
+    };
+    if (!willCreateLoop(connection.source, connection.target, edges)) {
+      set({
+        edges: addEdge(connection, edges),
+      });
+    } else {
+      console.warn("Connection would create a loop and was prevented.");
+    }
   },
+  
 
   updateNodeLabel: (nodeId: string, nodeVal: Partial<NodeData>) => {
     set((state) => {

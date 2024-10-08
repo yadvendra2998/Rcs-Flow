@@ -27,7 +27,7 @@ export const AddNodePanel = () => {
           <Row justify="center" align="middle" gutter={[12, 12]}>
             <Col md={12}>
               <div
-                className="bg-[#F5EDED] text-primary-foreground border border-transparent hover:border-[#DAA0A0] py-2 px-3 rounded-md cursor-pointer flex flex-col items-center gap-2 transition-colors"
+                className="bg-gradient-to-r from-[#F9D4D4] to-[#F5EDED] text-primary-foreground border border-transparent hover:border-[#DAA0A0] hover:shadow-lg py-2 px-3 rounded-md cursor-pointer flex flex-col items-center gap-2 transition-all duration-300 ease-in-out transform hover:-translate-y-1"
                 onDragStart={(event) => onDragStart(event, "textNode")}
                 draggable
               >
@@ -39,7 +39,7 @@ export const AddNodePanel = () => {
             </Col>
             <Col md={12}>
               <div
-                className="bg-[#DCDEF6] text-primary-foreground border border-transparent hover:border-[#9aa0e5] py-2 px-3 rounded-md cursor-pointer flex flex-col items-center gap-2 transition-colors"
+                className="bg-gradient-to-r from-[#D6D8F7] to-[#DCDEF6] text-primary-foreground border border-transparent hover:border-[#9aa0e5] hover:shadow-lg py-2 px-3 rounded-md cursor-pointer flex flex-col items-center gap-2 transition-all duration-300 ease-in-out transform hover:-translate-y-1"
                 onDragStart={(event) =>
                   onDragStart(event, "textWithButtonNode")
                 }
@@ -55,7 +55,7 @@ export const AddNodePanel = () => {
             </Col>
             <Col md={12}>
               <div
-                className="bg-[#DFE6DC] text-primary-foreground border border-transparent hover:border-[#bbcab4] py-2 px-3 rounded-md cursor-pointer flex flex-col items-center gap-2 transition-colors"
+                className="bg-gradient-to-r from-[#CEDFCC] to-[#DFE6DC] text-primary-foreground border border-transparent hover:border-[#bbcab4] hover:shadow-lg py-2 px-3 rounded-md cursor-pointer flex flex-col items-center gap-2 transition-all duration-300 ease-in-out transform hover:-translate-y-1"
                 onDragStart={(event) => onDragStart(event, "richcard")}
                 draggable
               >
@@ -67,7 +67,7 @@ export const AddNodePanel = () => {
             </Col>
             <Col md={12}>
               <div
-                className="bg-[#F5E5FC] text-primary-foreground border border-transparent hover:border-[#d38df2] py-2 px-3 rounded-md cursor-pointer flex flex-col items-center gap-2 transition-colors"
+                className="bg-gradient-to-r from-[#EED2FA] to-[#F5E5FC] text-primary-foreground border border-transparent hover:border-[#d38df2] hover:shadow-lg py-2 px-3 rounded-md cursor-pointer flex flex-col items-center gap-2 transition-all duration-300 ease-in-out transform hover:-translate-y-1"
                 onDragStart={(event) => onDragStart(event, "richcardcarousel")}
                 draggable
               >
@@ -81,7 +81,7 @@ export const AddNodePanel = () => {
             </Col>
             <Col md={12}>
               <div
-                className="bg-[#E0DDDD] text-primary-foreground border border-transparent hover:border-[#bbbbbb] py-2 px-3 rounded-md cursor-pointer flex flex-col items-center gap-2 transition-colors"
+                className="bg-gradient-to-r from-[#CACACA] to-[#E0DDDD] text-primary-foreground border border-transparent hover:border-[#bbbbbb] hover:shadow-lg py-2 px-3 rounded-md cursor-pointer flex flex-col items-center gap-2 transition-all duration-300 ease-in-out transform hover:-translate-y-1"
                 onDragStart={(event) => onDragStart(event, "textWithmedia")}
                 draggable
               >
@@ -89,7 +89,6 @@ export const AddNodePanel = () => {
                   style={{ color: "hsl(222.2,47.4%,11.2%)", fontSize: "30px" }}
                 />
                 <span className="font-semibold text-primary">
-                  {" "}
                   Text with Media
                 </span>
               </div>

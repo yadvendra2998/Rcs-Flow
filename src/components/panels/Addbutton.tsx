@@ -1,4 +1,4 @@
-import React, {  useEffect } from "react";
+import React, { useEffect } from "react";
 import useStore from "@/config/store";
 import { CloseOutlined, PlusOutlined } from "@ant-design/icons";
 import {
@@ -22,24 +22,24 @@ export interface ActionData {
   type: string;
   title: string;
   payload: string;
+  url?: string;
+  label?: string;
   phoneNumber?: string;
   latitude?: number;
   longitude?: number;
   startDate?: any;
   endDate?: any;
   name?: any;
+  description?: string;
 }
 
 interface AddButtonProps {
   textareaValue: string;
   templateName: string;
-  discription: string;
+  description: string;
   title: string;
   button: ActionData[];
   setButton: (state: any) => void;
-  setRichCardCarousels: (state: any) => void;
-  cardIndex: number;
-  richCardCarousels: any;
 }
 
 const selector = (state: {
@@ -55,19 +55,17 @@ const selector = (state: {
 const Addbutton: React.FC<AddButtonProps> = ({
   textareaValue,
   templateName,
-  discription,
+  description,
   title,
   setButton,
-  cardIndex,
-  button = [], // Ensure `button` is an array by default
-  setRichCardCarousels,
-  richCardCarousels,
+  button,
 }) => {
+  const [form] = Form.useForm();
   const { selectedNode, updateNodeLabel } = useStore(selector, shallow);
 
   useEffect(() => {
     if (selectedNode) {
-      const updatedActions = selectedNode.data.buttons || [];
+      const updatedActions = selectedNode?.data?.buttons || [];
       if (updatedActions.length === 0) {
         setButton((prev: { actions: ActionData[] }) => ({
           ...prev,
@@ -84,8 +82,22 @@ const Addbutton: React.FC<AddButtonProps> = ({
         setButton({ actions: updatedActions });
       }
     }
-    console.log("Updated", selectedNode)
+    console.log("Updated", selectedNode);
   }, [selectedNode, setButton]);
+
+  useEffect(() => {
+    if (selectedNode) {
+      updateNodeLabel(selectedNode.id, {
+        label: title || textareaValue,
+        name: templateName,
+        description: description,
+        buttons: button?.map((action) => ({
+          title: action.title || "Untitled",
+          type: action.type || "quick",
+        })),
+      });
+    }
+  }, [button, selectedNode, title, textareaValue, templateName, description]);
 
   const handleChange = (index: number, key: string, value: any) => {
     setButton((prev: { actions: ActionData[] }) => {
@@ -95,48 +107,17 @@ const Addbutton: React.FC<AddButtonProps> = ({
       if (key === "type") {
         actions[index] = {
           ...actions[index],
+          [key]: value,
           title: "",
           payload: "",
-          phoneNumber: undefined,
-          latitude: undefined,
-          longitude: undefined,
-          startDate: undefined,
-          endDate: undefined,
         };
-      }
-
-      if (setRichCardCarousels) {
-        setRichCardCarousels((prev: any) => {
-          const updated = [...prev];
-          updated[cardIndex] = {
-            ...updated[cardIndex],
-            buttons: actions.map((action) => ({
-              title: action.title || "Untitled",
-              type: action.type || "quick",
-            })),
-          };
-
-          if (selectedNode) {
-            updateNodeLabel(selectedNode.id, {
-              label: title || textareaValue,
-              name: templateName,
-              description: discription,
-              richCardCarousels: updated,
-              buttons: actions.map((action) => ({
-                title: action.title || "Untitled",
-                type: action.type || "quick",
-              })),
-            });
-          }
-
-          return updated;
-        });
+        return { actions };
       } else {
         if (selectedNode) {
-          updateNodeLabel(selectedNode.id, {
+          updateNodeLabel(selectedNode?.id, {
             label: title || textareaValue,
             name: templateName,
-            description: discription,
+            description: description,
             buttons: actions.map((action) => ({
               title: action.title || "Untitled",
               type: action.type || "quick",
@@ -145,17 +126,17 @@ const Addbutton: React.FC<AddButtonProps> = ({
         }
       }
 
-      return { ...prev, actions };
+      return { ...prev.actions, actions };
     });
 
     console.log("button? and description", button);
   };
 
-
+  
 
   const addNewCard = () => {
-    if (button?.length < 11) {
-      const newId = button?.length;
+    if (button.length < 11) {
+      const newId = button.length;
       const newButton: ActionData = {
         id: newId,
         type: "quick",
@@ -166,49 +147,29 @@ const Addbutton: React.FC<AddButtonProps> = ({
       setButton((prev: { actions: ActionData[] }) => {
         const updatedActions = [...prev.actions, newButton];
 
+        // Update the node if a selectedNode exists
         if (selectedNode) {
           const buttonData = updatedActions.map((action) => ({
             title: action.title || "Untitled",
             type: action.type || "quick",
           }));
 
-          if (setRichCardCarousels) {
-            setRichCardCarousels((prev: any) => {
-              const updated = [...prev];
-              updated[cardIndex] = {
-                ...updated[cardIndex],
-                buttons: buttonData,
-              };
-
-              if (selectedNode) {
-                updateNodeLabel(selectedNode.id, {
-                  richCardCarousels: updated,
-                  name: templateName,
-                  label: title || textareaValue,
-                  description: discription,
-                  buttons: buttonData,
-                });
-              }
-
-              return updated;
-            });
-          } else {
-            updateNodeLabel(selectedNode.id, {
-              label: title || textareaValue,
-              name: templateName,
-              description: discription,
-              buttons: buttonData,
-            });
-          }
+          // Call the updateNodeLabel function to update the node
+          updateNodeLabel(selectedNode.id, {
+            label: title || textareaValue,
+            name: templateName,
+            description: description,
+            buttons: buttonData,
+          });
         }
-        return { ...prev, actions: updatedActions };
+
+        return { actions: updatedActions }; // Return the updated state
       });
     } else {
       message.warning("Cannot add more than 11 buttons");
     }
   };
 
- 
   const deleteCard = (index: number) => {
     if (button?.length > 1) {
       const filteredData = button?.filter((_, i) => i !== index);
@@ -222,43 +183,41 @@ const Addbutton: React.FC<AddButtonProps> = ({
           title: action.title || "Untitled",
           type: action.type || "quick",
         }));
-
-        if (setRichCardCarousels) {
-          setRichCardCarousels((prev: any) => {
-            const updated = [...prev];
-            updated[cardIndex] = {
-              ...updated[cardIndex],
-              buttons: updatedButtonData,
-            };
-
-            updateNodeLabel(selectedNode.id, {
-              richCardCarousels: updated,
-              name: templateName,
-              label: title,
-              description: discription,
-              buttons: updatedButtonData,
-            });
-
-            return updated;
-          });
-        } else {
-          updateNodeLabel(selectedNode.id, {
-            label: title,
-            name: templateName,
-            description: discription,
-            buttons: updatedButtonData,
-          });
-        }
+        updateNodeLabel(selectedNode.id, {
+          label: title,
+          name: templateName,
+          description: description,
+          buttons: updatedButtonData,
+        });
       }
     } else {
       message.warning("At least one button is required");
     }
   };
 
-  console.log("index",cardIndex);
+
+  useEffect(() => {
+    const initValues = button.reduce((acc: { [x: string]: any }, button: ActionData, i: any) => {
+      acc[`button-type-${i}`] = button.type;
+      acc[`button-title-${i}`] = button.title;
+      acc[`button-payload-${i}`] = button.payload;
+      acc[`button-phoneNumber-${i}`] = button.phoneNumber;
+      acc[`button-url-${i}`] = button.url;
+      acc[`button-label-${i}`] = button.label;
+      acc[`button-latitude-${i}`] = button.latitude;
+      acc[`button-longitude-${i}`] = button.longitude;
+      acc[`button-startDate-${i}`] = button.startDate;
+      acc[`button-endDate-${i}`] = button.endDate;
+      acc[`button-description-${i}`] = button.description;
+      return acc;
+    }, {});
+    form.setFieldsValue(initValues);
+  }, [button]);
+
+  console.log("index", button);
   return (
-    <div className="p-2 mt-3">
-      <Form layout="vertical">
+    <div className=" mt-3">
+      <Form form={form} layout="vertical">
         <Space
           style={{
             width: "100%",
@@ -275,7 +234,7 @@ const Addbutton: React.FC<AddButtonProps> = ({
           </Button>
         </Space>
         {Array.isArray(button) &&
-          button.map((btn, index) => (
+          button?.map((btn, index) => (
             <Card
               key={index}
               style={{ marginTop: "10px", position: "relative" }}
@@ -291,11 +250,10 @@ const Addbutton: React.FC<AddButtonProps> = ({
               />
               <Row gutter={[16, 0]}>
                 <Col md={24}>
-                  <Form.Item label="Action" style={{ marginBottom: "10px" }}>
+                  <Form.Item name={`button-type-${index}`} label="Action" style={{ marginBottom: "10px" }}>
                     <Select
-                      value={btn.type}
+                      value={btn?.type}
                       onChange={(value) => handleChange(index, "type", value)}
-                      size="large"
                       style={{ width: "100%", textAlign: "left" }}
                       options={[
                         { value: "quick", label: "Quick Reply" },
@@ -309,12 +267,13 @@ const Addbutton: React.FC<AddButtonProps> = ({
                 </Col>
                 <Col md={24}>
                   <Form.Item
-                    name={`button_title_${cardIndex}_${index}`}
+                    name={`button-title-${index}`}
                     label="Title"
-                    style={{ marginBottom: "10px" }}
+                    style={{ marginBottom: "10px", textAlign: "left" }}
                     rules={[
                       {
                         required: true,
+                        type: "string",
                         message: "Please enter title",
                       },
                       {
@@ -324,23 +283,24 @@ const Addbutton: React.FC<AddButtonProps> = ({
                     ]}
                   >
                     <Input
+                      variant="filled"
                       onChange={(e) =>
                         handleChange(index, "title", e.target.value)
                       }
-                      size="large"
                       // defaultValue={btn.title}
                       placeholder="Enter Title"
-                      value={btn.title}
+                      value={btn?.title}
                       maxLength={25}
+                      showCount={true}
                     />
                   </Form.Item>
-
                 </Col>
-                {btn.type === "call" && (
+                {btn?.type === "call" && (
                   <Col md={24}>
-                    <Form.Item label="Phone Number">
+                    <Form.Item name={`button-phoneNumber-${index}`} label="Phone Number">
                       <Input
-                        value={btn.phoneNumber}
+                        variant="filled"
+                        value={btn?.phoneNumber}
                         onChange={(e) =>
                           handleChange(index, "phoneNumber", e.target.value)
                         }
@@ -350,13 +310,14 @@ const Addbutton: React.FC<AddButtonProps> = ({
                     </Form.Item>
                   </Col>
                 )}
-                {btn.type === "url" && (
+                {btn?.type === "url" && (
                   <Col md={24}>
-                    <Form.Item label="URL">
+                    <Form.Item name={`button-url-${index}`} label="URL">
                       <Input
+                        variant="filled"
                         value={btn.payload}
                         onChange={(e) =>
-                          handleChange(index, "payload", e.target.value)
+                          handleChange(index, "url", e.target.value)
                         }
                         size="large"
                         placeholder="Enter URL"
@@ -364,14 +325,15 @@ const Addbutton: React.FC<AddButtonProps> = ({
                     </Form.Item>
                   </Col>
                 )}
-                {btn.type === "location" && (
+                {btn?.type === "location" && (
                   <>
                     <Col md={24}>
-                      <Form.Item label="Label">
+                      <Form.Item name={`button-label-${index}`} label="Label">
                         <Input
-                          value={btn.payload}
+                          variant="filled"
+                          value={btn?.payload}
                           onChange={(e) =>
-                            handleChange(index, "payload", e.target.value)
+                            handleChange(index, "label", e.target.value)
                           }
                           size="large"
                           placeholder="Enter Label"
@@ -379,10 +341,10 @@ const Addbutton: React.FC<AddButtonProps> = ({
                       </Form.Item>
                     </Col>
                     <Col md={12}>
-                      <Form.Item label="Latitude">
+                      <Form.Item name={`button-latitude-${index}`} label="Latitude">
                         <InputNumber
                           style={{ width: "100%" }}
-                          value={btn.latitude}
+                          value={btn?.latitude}
                           onChange={(value) =>
                             handleChange(index, "latitude", value)
                           }
@@ -392,10 +354,10 @@ const Addbutton: React.FC<AddButtonProps> = ({
                       </Form.Item>
                     </Col>
                     <Col md={12}>
-                      <Form.Item label="Longitude">
+                      <Form.Item name={`button-longitude-${index}`} label="Longitude">
                         <InputNumber
                           style={{ width: "100%" }}
-                          value={btn.longitude}
+                          value={btn?.longitude}
                           onChange={(value) =>
                             handleChange(index, "longitude", value)
                           }
@@ -406,14 +368,15 @@ const Addbutton: React.FC<AddButtonProps> = ({
                     </Col>
                   </>
                 )}
-                {btn.type === "calendar" && (
+                {btn?.type === "calendar" && (
                   <>
                     <Col md={24}>
-                      <Form.Item label="Label">
+                      <Form.Item name={`button-label-${index}`} label="Label">
                         <Input
-                          value={btn.payload}
+                          variant="filled"
+                          value={btn?.payload}
                           onChange={(e) =>
-                            handleChange(index, "payload", e.target.value)
+                            handleChange(index, "label", e.target.value)
                           }
                           size="large"
                           placeholder="Enter Label"
@@ -421,10 +384,10 @@ const Addbutton: React.FC<AddButtonProps> = ({
                       </Form.Item>
                     </Col>
                     <Col md={12}>
-                      <Form.Item label="Start Date">
+                      <Form.Item name={`button-startDate-${index}`} label="Start Date">
                         <DatePicker
                           style={{ width: "100%" }}
-                          value={btn.startDate}
+                          value={btn?.startDate}
                           onChange={(date) =>
                             handleChange(index, "startDate", date)
                           }
@@ -433,10 +396,10 @@ const Addbutton: React.FC<AddButtonProps> = ({
                       </Form.Item>
                     </Col>
                     <Col md={12}>
-                      <Form.Item label="End Date">
+                      <Form.Item name={`button-endDate-${index}`} label="End Date">
                         <DatePicker
                           style={{ width: "100%" }}
-                          value={btn.endDate}
+                          value={btn?.endDate}
                           onChange={(date) =>
                             handleChange(index, "endDate", date)
                           }
@@ -454,4 +417,4 @@ const Addbutton: React.FC<AddButtonProps> = ({
   );
 };
 
-export default Addbutton; 
+export default Addbutton;

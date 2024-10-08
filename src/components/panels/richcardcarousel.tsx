@@ -13,6 +13,7 @@ import {
   Space,
   Typography,
   Upload,
+  UploadFile,
 } from "antd";
 import { ArrowLeft } from "lucide-react";
 import { Node } from "reactflow";
@@ -20,6 +21,7 @@ import { shallow } from "zustand/shallow";
 import CustomSegment from "./customSegment";
 import TextArea from "antd/es/input/TextArea";
 import Addbutton from "./Addbutton";
+import AddCarouselButtons from "./AddCarouselButtons";
 
 interface RichCardButton {
   id: number;
@@ -28,14 +30,13 @@ interface RichCardButton {
   payload: string;
 }
 
-interface RichCardButtonsState {
-  orientation: string;
+export type RichCardButtonsState = {
   title: string;
   description: string;
   media: string;
   mediaHeight: string;
-  actions: RichCardButton[];
-}
+  button: RichCardButton[];
+};
 
 interface ActionData {
   id: number;
@@ -62,64 +63,88 @@ const selector = (state: {
   setSelectedNode: state.setSelectedNode,
 });
 
-export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
+export const richcardcarousel = () => {
+  const [form] = Form.useForm();
   const { selectedNode, updateNodeLabel, setSelectedNode } = useStore(
     selector,
     shallow
   );
 
-  console.log("selectedNode-->", selectedNode);
-
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [value1, setValue1] = useState("short");
-  const [previewImage, setPreviewImage] = useState([]);
+  const [value1, setValue1] = useState("medium");
+  const [previewImage, setPreviewImage] = useState<string[]>([]);
 
   const [options, setOptions] = useState(["Card 1", "Card 2"]);
   const [cardIndex, setCardIndex] = useState(0);
-  // const [value, setValue] = useState(data?.richCardCarousel?.width || "small");
-  const [mediaModal, setMediaModal] = useState(false);
 
-  const [media, setMedia] = useState(null);
+  const [media, setMedia] = useState("");
   const [templateName, setTemplateName] = useState<string>("");
-  const [discription, setDiscription] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
   const [title, setTitle] = useState<string>("");
-  const [button, setButton] = useState<{ actions: ActionData[] }>({
-    actions: [
-      {
-        id: 0,
-        type: "quick",
-        title: "",
-        payload: "",
-      },
-    ],
-  });
+  // const [button, setButton] = useState<{ actions: ActionData[] }>({
+  //   actions: [
+  //     {
+  //       id: 0,
+  //       type: "quick",
+  //       title: "",
+  //       payload: "",
+  //     },
+  //   ],
+  // });
 
-  const [richCardCarousels, setRichCardCarousels] = useState<ActionData[]>([
+  const initialCards = [
     {
-      title: selectedNode?.data?.label,
+      title: "Card 1",
       description: "",
-      media: media || "",
+      media: "",
       mediaHeight: value1,
-      actions: [],
-      button: button?.actions,
+      button: [
+        {
+          id: 1,
+          type: "quick",
+          title: "Button 1",
+          payload: "",
+        },
+      ],
     },
     {
-      title: selectedNode?.data?.label,
+      title: "Card 2",
       description: "",
-      media: media || "",
+      media: "",
       mediaHeight: value1,
-      actions: [],
-      button: button?.actions,
+      button: [
+        {
+          id: 1,
+          type: "quick",
+          title: "Button 1",
+          payload: "",
+        },
+      ],
     },
-  ]);
+  ];
+
+  const [richCardCarousels, setRichCardCarousels] =
+    useState<RichCardButtonsState[]>(initialCards);
+
+  console.log("Initial State:", richCardCarousels);
 
   const handleCardChange = (newValue: React.SetStateAction<number>) => {
     setCardIndex(newValue);
   };
 
+  useEffect(() => {
+    if (selectedNode) {
+      const currentCarousel = selectedNode.data?.richCardCarousels?.[cardIndex];
+      if (currentCarousel) {
+        setValue1(currentCarousel.mediaHeight || "short"); // Set value1 based on the current card's mediaHeight
+      }
+    }
+  }, [cardIndex, selectedNode]);
+
   const onChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setValue1(newValue);
+
     setRichCardCarousels((prev) => {
       const updated = [...prev];
       updated[cardIndex] = {
@@ -131,40 +156,40 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
           richCardCarousels: updated,
         });
       }
-
       return updated;
     });
   };
 
-  useEffect(() => {
-    setRichCardCarousels((prev) => {
-      const updated = [...prev];
-      updated[cardIndex] = {
-        ...updated[cardIndex],
-        mediaHeight: value1,
-      };
-      return updated;
-    });
-  }, [value1, cardIndex]);
-
   const handleAddCardsTemplate = () => {
     if (options.length < 10) {
-      const newCard = {
-        title: "123",
+      const newButton:RichCardButton = {
+        id: 0, // Set this dynamically if you have multiple buttons per card
+        type: "quick",
+        title: "",
+        payload: "",
+      };
+  
+      const newCard:RichCardButtonsState = {
+        title: "",
         description: "",
-        media: media,
-        mediaHeight: value1,
-        actions: [
-          {
-            id: 0,
-            type: "quick",
-            title: selectedNode?.data?.label,
-            payload: "",
-          },
-        ],
+        media: "",
+        mediaHeight: value1, // Assuming value1 is defined
+        button: [newButton],
       };
       setOptions((prev) => [...prev, `Card ${prev.length + 1}`]);
-      setRichCardCarousels((prev) => [...prev, newCard]);
+
+      setRichCardCarousels((prev) => {
+        const updatedCarousels = [...prev, newCard];
+        
+        // Call updateNodeLabel with the updated state
+        if (selectedNode) {
+          updateNodeLabel(selectedNode.id, {
+            richCardCarousels: updatedCarousels,
+          });
+        }
+  
+        return updatedCarousels;
+      });
     } else {
       message.warning("Cannot add more than 10 cards");
     }
@@ -172,32 +197,29 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
 
   useEffect(() => {
     if (selectedNode) {
-      setTitle(selectedNode?.data?.name);
-      if (
-        selectedNode.data?.richCardCarousels &&
-        selectedNode.data.richCardCarousels.length > cardIndex
-      ) {
-        const selectedCarousel = selectedNode.data.richCardCarousels[cardIndex];
+      const selectedCarousel =
+        selectedNode.data?.richCardCarousels?.[cardIndex];
+        setTemplateName(selectedNode.data?.name)
+      if (selectedCarousel) {
         setMedia(selectedCarousel.media || null);
-        setRichCardCarousels((prev) => {
-          const updated = [...prev];
-          updated[cardIndex] = {
-            ...updated[cardIndex],
-            media: selectedCarousel.media || null,
-          };
-          return updated;
-        });
+        setTitle(selectedCarousel.title || "");
+        setDescription(selectedCarousel.description || "");
+
+        setRichCardCarousels(
+          selectedNode?.data?.richCardCarousels?.map(
+            (card: RichCardButtonsState, i: number) => ({
+              ...card,
+            })
+          )
+        );
+        setOptions(
+          selectedNode?.data?.richCardCarousels?.map(
+            (_: any, i: number) => `Card ${i + 1}`
+          )
+        );
       }
     }
-  }, [selectedNode, cardIndex, value1]);
-
-  useEffect(() => {
-    console.log("value1:", value1);
-  }, [value1]);
-
-  useEffect(() => {
-    console.log("setRichCardCarousels:", setRichCardCarousels);
-  }, [setRichCardCarousels]);
+  }, [selectedNode, cardIndex,description,templateName,title]);
 
   const customRequest = ({ file, onSuccess }: any) => {
     setTimeout(() => {
@@ -249,28 +271,31 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
     setTemplateName(value);
     if (selectedNode) {
       updateNodeLabel(selectedNode.id, {
-        name: value,
         richCardCarousels: richCardCarousels,
+        name:value
       });
     }
   };
 
   const handleDescriptionChange = (value: string) => {
-    setDiscription(value);
+    setDescription(value);
+
     setRichCardCarousels((prev) => {
       const updated = [...prev];
       updated[cardIndex] = {
         ...updated[cardIndex],
-        description: value,
+        description: value, // Only update the description, keep other properties
       };
+      if (selectedNode) {
+        updateNodeLabel(selectedNode.id, {
+          name: templateName,
+          richCardCarousels: updated,
+        });
+      }
       return updated;
     });
-    if (selectedNode) {
-      updateNodeLabel(selectedNode.id, {
-        name: templateName,
-        richCardCarousels,
-      });
-    }
+
+    
   };
 
   const handleChange2 = (value: string) => {
@@ -280,7 +305,7 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
       const updated = [...prev];
       updated[cardIndex] = {
         ...updated[cardIndex],
-        title: value,
+        title: value, // Only update the title, keep other properties
       };
       return updated;
     });
@@ -293,17 +318,14 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
     }
   };
 
-  console.log("richCardCarousels", richCardCarousels);
-  console.log("cardIndex", richCardCarousels[cardIndex]);
-
   return (
     <>
-      <div className="p-2 font-semibold flex">
+      <div className="p-2 font-semibold flex sticky top-0 bg-white z-10">
         <button onClick={() => setSelectedNode(null)}>
           <ArrowLeft />
         </button>
         <h2 className="flex-grow text-center">
-          {selectedNode.type === "textWithButtonNode"
+          {selectedNode?.type === "textWithButtonNode"
             ? "Text with Button"
             : "Richcard Carousel"}
         </h2>
@@ -312,11 +334,12 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
       <div className="p-2 mt-3">
         <Form layout="vertical">
           <Form.Item
-            name={`templatename${cardIndex}`}
+            name={`templatename`}
             label="Template Name"
             style={{ marginBottom: "10px" }}
           >
             <Input
+              variant="filled"
               placeholder="Template Name"
               defaultValue={selectedNode?.data?.name || ""}
               onChange={(e) => {
@@ -389,6 +412,7 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
                 style={{ marginBottom: "10px" }}
               >
                 <Input
+                  variant="filled"
                   placeholder="Title"
                   defaultValue={
                     selectedNode?.data?.richCardCarousels?.[cardIndex]?.title ||
@@ -405,6 +429,7 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
                 style={{ marginBottom: "10px" }}
               >
                 <TextArea
+                  variant="filled"
                   placeholder="Description"
                   defaultValue={
                     selectedNode?.data?.richCardCarousels?.[cardIndex]
@@ -439,12 +464,12 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
                   justifyContent: "center",
                   marginTop: 10,
                   cursor: "pointer",
-                  padding: richCardCarousels[cardIndex]?.media
+                  padding: richCardCarousels?.[cardIndex]?.media
                     ? "15px 0px"
                     : "50px 0px",
                 }}
               >
-                {richCardCarousels[cardIndex]?.media ? (
+                {richCardCarousels?.[cardIndex]?.media ? (
                   <div
                     style={{
                       position: "relative",
@@ -455,7 +480,7 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
                     <img
                       src={
                         selectedNode?.data?.richCardCarousels?.[cardIndex]
-                          ?.media || richCardCarousels[cardIndex]?.media
+                          ?.media || richCardCarousels?.[cardIndex]?.media
                       }
                       alt="avatar"
                       style={{
@@ -475,11 +500,10 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
                         if (selectedNode) {
                           updateNodeLabel(selectedNode.id, {
                             richCardCarousels: updatedCards,
-                            name: templateName,
                           });
                         }
 
-                        setMedia(null);
+                        setMedia("");
                       }}
                       size="small"
                       style={{
@@ -500,7 +524,7 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
                     style={{
                       width: "100%",
                       height: "100%",
-                      display: richCardCarousels[cardIndex]?.media
+                      display: richCardCarousels?.[cardIndex]?.media
                         ? "none"
                         : "flex",
                       alignItems: "center",
@@ -519,22 +543,20 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
               label={"Size"}
               rules={[{ required: true, message: "Please select size" }]}
               initialValue={
-                selectedNode?.data?.richCardCarousels?.[cardIndex]?.mediaHeight
+                selectedNode?.data?.richCardCarousels?.[cardIndex]
+                  ?.mediaHeight || richCardCarousels?.[cardIndex]?.mediaHeight
               }
             >
               <Radio.Group
                 style={{ marginTop: "10px", width: "100%", textAlign: "left" }}
-                onChange={(e) => onChange1(e)}
-                value={
-                  selectedNode?.data?.richCardCarousels?.[cardIndex]
-                    ?.mediaHeight || " "
-                }
+                onChange={(e: any) => onChange1(e)}
+                value={richCardCarousels?.[cardIndex]?.mediaHeight}
               >
                 <Space direction="vertical" style={{ width: "100%" }}>
                   <div
                     style={{
                       border: "1px solid #D9D9D9",
-                      padding: "10px 15px",
+                      padding: "7px 7px",
                       borderRadius: "8px",
                     }}
                   >
@@ -543,7 +565,7 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
                   <div
                     style={{
                       border: "1px solid #D9D9D9",
-                      padding: "10px 15px",
+                      padding: "7px 7px",
                       borderRadius: "8px",
                     }}
                   >
@@ -552,7 +574,7 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
                   <div
                     style={{
                       border: "1px solid #D9D9D9",
-                      padding: "10px 15px",
+                      padding: "7px 7px",
                       borderRadius: "8px",
                     }}
                   >
@@ -562,9 +584,15 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
               </Radio.Group>
             </Form.Item>
           </Col>
-          <Addbutton
+          <AddCarouselButtons
+            form={form}
+            richCardCarousels={richCardCarousels}
+            setRichCardCarousels={setRichCardCarousels}
+            cardIndex={cardIndex}
+          />
+          {/* <Addbutton
             templateName={templateName}
-            discription={discription}
+            description={description}
             title={title}
             button={button.actions}
             setButton={setButton}
@@ -572,7 +600,7 @@ export const richcardcarousel = ({ isEdit, data }: RichCardProps) => {
             cardIndex={cardIndex}
             setRichCardCarousels={setRichCardCarousels}
             media={media}
-          />
+          /> */}
         </Row>
       </div>
     </>

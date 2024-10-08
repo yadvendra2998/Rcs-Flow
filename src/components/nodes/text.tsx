@@ -1,28 +1,39 @@
 import useStore from "@/config/store";
-import { CopyOutlined, DeleteOutlined, MoreOutlined } from "@ant-design/icons";
+import {
+  CalendarOutlined,
+  CopyOutlined,
+  DeleteOutlined,
+  EnvironmentOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
+  FlagOutlined,
+  LinkOutlined,
+  MessageOutlined,
+  MoreOutlined,
+  PhoneOutlined,
+} from "@ant-design/icons";
 import {
   Button,
   Image,
   List,
-  Radio,
-  Slider,
-  ConfigProvider,
-  Switch,
   Popconfirm,
   PopconfirmProps,
   message,
   Space,
   Typography,
-  Popover,
   Flex,
   Card,
+  Dropdown,
+  Menu,
 } from "antd";
 import React, { memo, useState } from "react";
 import { Edge, Handle, Node, Position, getConnectedEdges } from "reactflow";
 import { shallow } from "zustand/shallow";
 import { cn } from "@/lib/utils";
-import { ActionData } from "../panels/Addbutton";
+
 const selector = (state: {
+  setStartNode: any;
+  startNodeId: any;
   removeNode: (id: string) => void;
   setSelectedNode: (node: Node | null) => void;
   selectedNode: Node | null;
@@ -34,21 +45,9 @@ const selector = (state: {
   selectedNode: state.selectedNode,
   setSelectedNode: state.setSelectedNode,
   addNode: state.addNode,
+  startNodeId: state.startNodeId,
+  setStartNode: state.setStartNode,
 });
-
-const confirm: PopconfirmProps["onConfirm"] = (id: string) => {
-  // Call the handleDelete function with the id
-  useStore.getState().removeNode(id);
-  message.success("Node deleted successfully");
-};
-
-const cancel: PopconfirmProps["onCancel"] = () => {
-  message.error("Deletion cancelled");
-};
-
-const onChange = (checked: boolean) => {
-  console.log(`switch to ${checked}`);
-};
 
 const getTitleByType = (type: any) => {
   switch (type) {
@@ -88,23 +87,40 @@ const getTitleByType = (type: any) => {
 };
 
 export const TextNode = memo((node: Node) => {
-  const { edges, addNode } = useStore(selector, shallow);
-  const { removeNode, setSelectedNode, selectedNode } = useStore(
+  const { edges, addNode, startNodeId, setStartNode } = useStore(
     selector,
     shallow
   );
-  const [isEnabled, setIsEnabled] = useState(true);
-
+  const { setSelectedNode } = useStore(selector, shallow);
+  const [disabledNodes, setDisabledNodes] = useState(new Set());
+  const [setIsEnabled] = useState(true);
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [sourceConnectable, setSourceConnectable] = React.useState(true);
   const { data, selected, id, type } = node;
   console.log("123", data);
-  const [arrow] = useState<"Show" | "Hide" | "Center">("Show");
+
   const alledges = getConnectedEdges([node], edges);
 
   React.useEffect(() => {
     const isSourceConnected = alledges.some((edge) => edge.source === id);
     setSourceConnectable(!isSourceConnected);
   }, [alledges, id]);
+
+  const handleSetStartNode = (nodeId: string) => {
+    setStartNode(nodeId);
+  };
+
+  const handleNodeClick = (nodeId: unknown) => {
+    setDisabledNodes((prev) => {
+      const updated = new Set(prev);
+      if (updated.has(nodeId)) {
+        updated.delete(nodeId);
+      } else {
+        updated.add(nodeId);
+      }
+      return updated;
+    });
+  };
 
   const handleCopy = () => {
     if (data.isInitial) {
@@ -131,21 +147,13 @@ export const TextNode = memo((node: Node) => {
 
   const getImageWidth = () => {
     if (data.mediaHeight === "small") {
-      return 100;
+      return 80;
     } else if (data.mediaHeight === "medium") {
-      return 150;
-    } else if (data.mediaHeight === "tall") {
-      return 200;
-    } else {
       return 100;
-    }
-  };
-
-  console.log("getImageWidth", data.richCardCarousels);
-  const handleSwitchChange = (checked) => {
-    setIsEnabled(checked);
-    if (onChange) {
-      onChange(checked);
+    } else if (data.mediaHeight === "tall") {
+      return 150;
+    } else {
+      return 80;
     }
   };
 
@@ -160,13 +168,25 @@ export const TextNode = memo((node: Node) => {
     switch (type) {
       case "textWithButtonNode":
         const buttonsToRender =
-          data.buttons && data.buttons.length > 0
-            ? data.buttons
-            : [defaultButton];
+          data?.buttons?.length > 0 ? data?.buttons : [defaultButton];
+        console.log("buttons", buttonsToRender);
         return (
           <div className="py-2 px-3 min-h-[32px]">
             <div>
-              <Typography.Text>{data.label}</Typography.Text>
+              <Typography.Text
+                style={{
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                {data.label
+                  ? data.label.split("\n").map((line, index) => (
+                      <span key={index}>
+                        {line}
+                        <br />
+                      </span>
+                    ))
+                  : "No description available."}
+              </Typography.Text>
               <Typography.Text>{data.discription}</Typography.Text>
               <div className="text-xs whitespace-pre-wrap">
                 {buttonsToRender.map((button: any, index: any) => (
@@ -177,44 +197,81 @@ export const TextNode = memo((node: Node) => {
                           size="small"
                           block
                           style={{ background: "#adafce", color: "black" }}
+                          icon={<MessageOutlined />}
                         >
+                          {/* {!data.isInitial && !disabledNodes.has(node.id) && ( */}
                           <Handle
                             type="source"
                             id={`button-${index}`}
                             position={Position.Right}
                             isConnectable={true}
                           />
+                          {/* )} */}
                           {button.title || "Untitled"}
                         </Button>
                       ) : (
-                        <Button
-                          size="small"
-                          block
-                          style={{ background: "##adafce", color: "black" }}
-                        >
-                          {button.title || "Untitled"}
-                        </Button>
+                        <>
+                          {button.type === "call" && (
+                            <Button
+                              size="small"
+                              style={{ background: "#adafce", color: "black" }}
+                              block
+                            >
+                              <PhoneOutlined /> {button.title || "Untitled"}
+                            </Button>
+                          )}
+                          {button.type === "url" && (
+                            <Button
+                              block
+                              size="small"
+                              style={{ background: "#adafce", color: "black" }}
+                            >
+                              <LinkOutlined /> {button.title || "Untitled"}
+                            </Button>
+                          )}
+                          {button.type === "location" && (
+                            <Button
+                              block
+                              size="small"
+                              style={{ background: "#adafce", color: "black" }}
+                            >
+                              <EnvironmentOutlined />{" "}
+                              {button.title || "Untitled"}
+                            </Button>
+                          )}
+                          {button.type === "calendar" && (
+                            <Button
+                              block
+                              size="small"
+                              style={{ background: "#adafce", color: "black" }}
+                            >
+                              <CalendarOutlined /> {button.title || "Untitled"}
+                            </Button>
+                          )}
+                        </>
                       )}
                     </Flex>
-                    {index < buttonsToRender.length - 1 && <br />}
+                    {index < buttonsToRender.length - 1 && (
+                      <div className="mt-2"></div>
+                    )}
                   </React.Fragment>
                 ))}
               </div>
             </div>
           </div>
         );
+
       case "richcard":
         return (
           <>
             <div className="py-2 px-3 min-h-[32px]">
-              <Card>
-                <div style={{ textAlign: "center" }}>
+              <Card bodyStyle={{ padding: "0px" }}>
+                <div style={{ textAlign: "center", alignItems: "center" }}>
                   {data?.media ? (
                     <Image
                       src={data.media}
                       preview={false}
                       width={getImageWidth()}
-                      // alt="Richcard media"
                     />
                   ) : (
                     <Image
@@ -227,41 +284,136 @@ export const TextNode = memo((node: Node) => {
                 <Typography.Text strong>{data.label}</Typography.Text>
                 <br />
                 <Typography.Text>{data.title}</Typography.Text>
-                <Typography.Text>{data.description}</Typography.Text>
-                <div className="mt-2">
-                  {data.buttons && data.buttons.length > 0 ? (
-                    data.buttons.map((button: any, index: any) => (
+                <Typography.Text
+                  style={{
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
+                  {data.description
+                    ? data.description
+                        .split("\n")
+                        .map(
+                          (
+                            line:
+                              | string
+                              | number
+                              | boolean
+                              | React.ReactElement<
+                                  any,
+                                  string | React.JSXElementConstructor<any>
+                                >
+                              | Iterable<React.ReactNode>
+                              | React.ReactPortal
+                              | null
+                              | undefined,
+                            index: React.Key | null | undefined
+                          ) => (
+                            <span key={index}>
+                              {line}
+                              <br />
+                            </span>
+                          )
+                        )
+                    : "No description available."}{" "}
+                </Typography.Text>
+                <div>
+                  {data?.buttons?.length > 0 ? (
+                    data?.buttons?.map((button: any, index: any) => (
                       <React.Fragment key={index}>
-                        <Flex justify="space-around">
-                          {button.type === "quick" ? (
-                            <Button
-                              size="small"
-                              block
-                              style={{ background: "#adafce", color: "black" }}
-                            >
-                              <Handle
-                                type="source"
-                                id={`button-${index}`}
-                                position={Position.Right}
-                                isConnectable={true}
-                              />
-                              {button.title || "Untitled"}
-                            </Button>
-                          ) : (
-                            <Button
-                              size="small"
-                              block
-                              style={{ background: "##adafce", color: "black" }}
-                            >
-                              {button.title || "Untitled"}
-                            </Button>
-                          )}
-                        </Flex>
-                        {index < data.buttons.length - 1 && <br />}
+                        {button.type === "quick" ? (
+                          <Button
+                            size="small"
+                            block
+                            style={{ background: "#adafce", color: "black" }}
+                            icon={<MessageOutlined />}
+                          >
+                            <Handle
+                              type="source"
+                              id={`button-${index}`}
+                              position={Position.Right}
+                              isConnectable={true}
+                            />
+                            {button.title || "Untitled"}
+                          </Button>
+                        ) : (
+                          <>
+                            {button.type === "call" && (
+                              <Button
+                                size="small"
+                                style={{
+                                  background: "#adafce",
+                                  color: "black",
+                                }}
+                                block
+                              >
+                                <PhoneOutlined /> {button.title || "Untitled"}
+                              </Button>
+                            )}
+                            {button.type === "url" && (
+                              <Button
+                                block
+                                size="small"
+                                style={{
+                                  background: "#adafce",
+                                  color: "black",
+                                }}
+                              >
+                                <LinkOutlined /> {button.title || "Untitled"}
+                              </Button>
+                            )}
+                            {button.type === "location" && (
+                              <Button
+                                block
+                                size="small"
+                                style={{
+                                  background: "#adafce",
+                                  color: "black",
+                                }}
+                              >
+                                <EnvironmentOutlined />{" "}
+                                {button.title || "Untitled"}
+                              </Button>
+                            )}
+                            {button.type === "calendar" && (
+                              <Button
+                                block
+                                size="small"
+                                style={{
+                                  background: "#adafce",
+                                  color: "black",
+                                }}
+                              >
+                                <CalendarOutlined />{" "}
+                                {button.title || "Untitled"}
+                              </Button>
+                            )}
+                          </>
+                        )}
+                        {/* </Flex> */}
+                        {index < data.buttons.length - 1 && (
+                          <div className="mt-2"></div>
+                        )}
                       </React.Fragment>
                     ))
                   ) : (
-                    <></>
+                    <>
+                      <Button
+                        size="small"
+                        icon={<MessageOutlined />}
+                        block
+                        style={{
+                          background: "#adafce",
+                          color: "black",
+                        }}
+                      >
+                        <Handle
+                          type="source"
+                          position={Position.Right}
+                          isConnectable={true}
+                        />
+                        {defaultButton.title || "Untitled"}
+                      </Button>
+                    </>
                   )}
                 </div>
               </Card>
@@ -270,23 +422,18 @@ export const TextNode = memo((node: Node) => {
         );
 
       case "richcardcarousel":
-        const richCardCarouselButtons =
-          data.buttons && data.buttons.length > 0
-            ? data.buttons
-            : [defaultButton];
-
         return (
           <>
             {Array.isArray(data?.richCardCarousels) &&
-            data.richCardCarousels.length > 0 ? (
-              <Flex direction="column" align="center">
-                {data.richCardCarousels.map((card: any, index: any) => {
+            data?.richCardCarousels?.length > 0 ? (
+              <Flex direction="column" align="center" gap={2}>
+                {data?.richCardCarousels?.map((card: any, index: any) => {
                   const imageWidth =
                     card?.mediaHeight === "short"
+                      ? 80
+                      : card?.mediaHeight === "medium"
                       ? 100
-                      : card.mediaHeight === "medium"
-                      ? 155
-                      : 200;
+                      : 150;
 
                   return (
                     <div key={index} className="py-2 px-3 min-h-[32px] w-full">
@@ -294,7 +441,7 @@ export const TextNode = memo((node: Node) => {
                         <div style={{ textAlign: "center" }}>
                           {card?.media ? (
                             <Image
-                              src={card.media}
+                              src={card?.media}
                               preview={false}
                               width={imageWidth}
                               alt="Richcard media"
@@ -307,18 +454,54 @@ export const TextNode = memo((node: Node) => {
                             />
                           )}
                         </div>
-                        <Typography.Text strong>{card.title}</Typography.Text>
+                        <Typography.Text strong>{card?.title}</Typography.Text>
                         <br />
-                        <Typography.Text>{card.description}</Typography.Text>
+                        {/* <Typography.Text>{card.description}</Typography.Text> */}
+
+                        <Typography.Text
+                          style={{
+                            whiteSpace: "pre-wrap", // Preserve white space and line breaks
+                          }}
+                        >
+                          {card?.description
+                            ? card?.description
+                                .split("\n")
+                                .map(
+                                  (
+                                    line:
+                                      | string
+                                      | number
+                                      | boolean
+                                      | React.ReactElement<
+                                          any,
+                                          | string
+                                          | React.JSXElementConstructor<any>
+                                        >
+                                      | Iterable<React.ReactNode>
+                                      | React.ReactPortal
+                                      | null
+                                      | undefined,
+                                    index: React.Key | null | undefined
+                                  ) => (
+                                    <span key={index}>
+                                      {line}
+                                      <br />
+                                    </span>
+                                  )
+                                )
+                            : "No description available."}{" "}
+                          {/* Fallback text if description is undefined */}
+                        </Typography.Text>
+
                         <div className="text-xs whitespace-pre-wrap">
-                          {Array.isArray(card.buttons) &&
-                          card.buttons.length > 0
-                            ? card.buttons.map((button: any, btnIndex: any) => (
+                          {Array.isArray(card?.button) && card?.button?.length > 0
+                            ? card?.button?.map((button: any, btnIndex: any) => (
                                 <React.Fragment key={btnIndex}>
                                   <Flex justify="space-around">
                                     {button.type === "quick" ? (
                                       <Button
                                         size="small"
+                                        icon={<MessageOutlined />}
                                         block
                                         style={{
                                           background: "#adafce",
@@ -334,19 +517,65 @@ export const TextNode = memo((node: Node) => {
                                         {button.title || "Untitled"}
                                       </Button>
                                     ) : (
-                                      <Button
-                                        size="small"
-                                        block
-                                        style={{
-                                          background: "#adafce",
-                                          color: "black",
-                                        }}
-                                      >
-                                        {button.title || "Untitled"}
-                                      </Button>
+                                      <>
+                                        {button.type === "call" && (
+                                          <Button
+                                            size="small"
+                                            style={{
+                                              background: "#adafce",
+                                              color: "black",
+                                            }}
+                                            block
+                                          >
+                                            <PhoneOutlined />{" "}
+                                            {button.title || "Untitled"}
+                                          </Button>
+                                        )}
+                                        {button.type === "url" && (
+                                          <Button
+                                            block
+                                            size="small"
+                                            style={{
+                                              background: "#adafce",
+                                              color: "black",
+                                            }}
+                                          >
+                                            <LinkOutlined />{" "}
+                                            {button.title || "Untitled"}
+                                          </Button>
+                                        )}
+                                        {button.type === "location" && (
+                                          <Button
+                                            block
+                                            size="small"
+                                            style={{
+                                              background: "#adafce",
+                                              color: "black",
+                                            }}
+                                          >
+                                            <EnvironmentOutlined />{" "}
+                                            {button.title || "Untitled"}
+                                          </Button>
+                                        )}
+                                        {button.type === "calendar" && (
+                                          <Button
+                                            block
+                                            size="small"
+                                            style={{
+                                              background: "#adafce",
+                                              color: "black",
+                                            }}
+                                          >
+                                            <CalendarOutlined />{" "}
+                                            {button.title || "Untitled"}
+                                          </Button>
+                                        )}
+                                      </>
                                     )}
                                   </Flex>
-                                  {btnIndex < card.buttons.length - 1 && <br />}
+                                  {btnIndex < card.button.length - 1 && (
+                                    <div className="mt-2"></div>
+                                  )}
                                 </React.Fragment>
                               ))
                             : null}
@@ -368,6 +597,22 @@ export const TextNode = memo((node: Node) => {
                       />
                     </div>
                     <Typography.Text>No rich cards available</Typography.Text>
+                    <Button
+                      size="small"
+                      icon={<MessageOutlined />}
+                      block
+                      style={{
+                        background: "#adafce",
+                        color: "black",
+                      }}
+                    >
+                      <Handle
+                        type="source"
+                        position={Position.Right}
+                        isConnectable={true}
+                      />
+                      {defaultButton.title || "Untitled"}
+                    </Button>
                   </Card>
                   <Card>
                     <div style={{ textAlign: "center" }}>
@@ -378,6 +623,22 @@ export const TextNode = memo((node: Node) => {
                       />
                     </div>
                     <Typography.Text>No rich cards available</Typography.Text>
+                    <Button
+                      size="small"
+                      icon={<MessageOutlined />}
+                      block
+                      style={{
+                        background: "#adafce",
+                        color: "black",
+                      }}
+                    >
+                      <Handle
+                        type="source"
+                        position={Position.Right}
+                        isConnectable={true}
+                      />
+                      {defaultButton.title || "Untitled"}
+                    </Button>
                   </Card>
                 </Flex>
               </div>
@@ -388,6 +649,7 @@ export const TextNode = memo((node: Node) => {
       case "textWithmedia":
         return (
           <div className="py-2 px-3 min-h-[32px]">
+            <Typography.Text strong>{data.label}</Typography.Text>
             <div style={{ textAlign: "center" }}>
               {data?.media ? (
                 <Image
@@ -441,13 +703,15 @@ export const TextNode = memo((node: Node) => {
   };
 
   const { title, backgroundColor, color } = getTitleByType(type);
-  const text = (
-    <div>
-      <Space>
-        <CopyOutlined
-          style={{ color: "#8C8C8C", fontSize: "18px" }}
-          onClick={handleCopy}
-        />
+  const menu = (
+    <Menu>
+      <Menu.Item key="copy" onClick={handleCopy}>
+        <Space>
+          <CopyOutlined style={{ fontSize: "20px" }} />
+          Copy
+        </Space>
+      </Menu.Item>
+      <Menu.Item key="delete">
         <Popconfirm
           title="Delete the Node"
           description="Are you sure to delete this Node?"
@@ -455,74 +719,85 @@ export const TextNode = memo((node: Node) => {
           okText="Yes"
           cancelText="No"
         >
-          <DeleteOutlined style={{ color: "#8C8C8C", fontSize: "18px" }} />
+          <Space>
+            <DeleteOutlined style={{ fontSize: "20PX" }} />
+            Delete
+          </Space>
         </Popconfirm>
-        <MoreOutlined style={{ color: "#8C8C8C", fontSize: "18px" }} />
-      </Space>
-    </div>
+      </Menu.Item>
+      {startNodeId === node.id ? (
+        <Menu.Item key="unsetStartNode">
+          <span>Unset start node</span>
+        </Menu.Item>
+      ) : (
+        <Menu.Item
+          key="setStartNode"
+          onClick={() => handleSetStartNode(node.id)}
+        >
+          <Space>
+            <FlagOutlined style={{ fontSize: "20PX" }} />
+            Set start node
+          </Space>
+        </Menu.Item>
+      )}
+      <Menu.Item key="enable" onClick={() => handleNodeClick(node.id)}>
+        <Space>
+          {disabledNodes.has(node.id) ? (
+            <>
+              <EyeOutlined style={{ fontSize: "20px" }} />
+              <span>Enable</span>
+            </>
+          ) : (
+            <>
+              <EyeInvisibleOutlined style={{ fontSize: "20px" }} />
+              <span>Disable</span>
+            </>
+          )}
+        </Space>
+      </Menu.Item>
+    </Menu>
   );
   return (
     <>
-      {data.button && (
-        <div className="flex justify-start m-2">
-          <Button
-            size="small"
-            style={{ background: "rgba(163, 184, 250, 0.6)" }}
-          >
-            {data.button.label}
-          </Button>
-        </div>
+      {(startNodeId === node.id || (!startNodeId && data.isInitial)) && (
+        <Button style={{ background: "#8cb2f8", color: "black" }}>
+          Starting Step
+        </Button>
       )}
       <div
         className={cn(
-          "bg-white border-[1px] shadow-2xl border-transparent rounded-xl min-w-[200px] text-start",
+          "bg-white border-[1px] shadow-2xl border-transparent rounded-sm min-w-[200px] text-start",
           selected && "border-blue-500",
-          !isEnabled && "opacity-50"
+          disabledNodes.has(node.id) && "opacity-50"
         )}
       >
-        <Popover
-          placement="topRight"
-          title={text}
-          arrow={arrow === "Hide" ? false : undefined}
-          color={"#FFFFFF"}
+        <div
+          className="py-2 rounded-t-md px-3 text-sm font-semibold text-primary-foreground flex justify-between items-center"
+          style={{ backgroundColor }}
         >
-          <div
-            className="py-1 rounded-t-xl px-3 text-xs font-semibold text-primary-foreground flex justify-between items-center"
-            style={{ backgroundColor }}
-          >
-            <span style={{ color }}>{data?.name || title}</span>
-            <Switch
-              size="small"
-              checked={isEnabled}
-              onChange={handleSwitchChange}
-            />
-          </div>
+          <span style={{ color }}>{data?.name ?? title}</span>
+          <Dropdown overlay={menu} trigger={["click"]} placement="topLeft">
+            <MoreOutlined style={{ color: "#0f0505", fontSize: "18px" }} />
+          </Dropdown>
+        </div>
 
-          <div style={{ pointerEvents: isEnabled ? "auto" : "none" }}>
-            {renderNodeContent()}
-          </div>
+        <div
+          style={{
+            pointerEvents: disabledNodes.has(node.id) ? "none" : "auto",
+          }}
+        >
+          {" "}
+          {renderNodeContent()}
+        </div>
 
-          {isEnabled && (
-            <>
-              {data.isInitial ? (
-                <Handle
-                  style={{ marginTop: "25px" }}
-                  type="source"
-                  position={Position.Right}
-                  isConnectable={true}
-                  id="right"
-                />
-              ) : (
-                <Handle
-                  type="target"
-                  position={Position.Left}
-                  id="left"
-                  isConnectable={true}
-                />
-              )}
-            </>
-          )}
-        </Popover>
+        {!data.isInitial && !disabledNodes.has(node.id) && (
+          <Handle
+            type="target"
+            position={Position.Left}
+            id="left"
+            isConnectable={true}
+          />
+        )}
       </div>
     </>
   );

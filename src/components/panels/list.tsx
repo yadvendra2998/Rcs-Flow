@@ -1,5 +1,6 @@
 import useStore from "@/config/store";
-import {  List } from "antd";
+import { List } from "antd";
+import TextArea from "antd/es/input/TextArea";
 import { ArrowLeft } from "lucide-react";
 import { Node } from "reactflow";
 import { shallow } from "zustand/shallow";
@@ -20,7 +21,6 @@ export const list = () => {
     shallow
   );
 
-
   const data2 = [
     "Racing car sprays burning fuel into crowd.",
     "Japanese princess to wed commoner.",
@@ -35,7 +35,7 @@ export const list = () => {
   if (!selectedNode) return null;
   return (
     <>
-      <div className="p-2 font-semibold flex">
+      <div className="p-2 font-semibold flex sticky top-0 bg-white z-10">
         <button
           onClick={() => {
             setSelectedNode(null);
@@ -56,12 +56,13 @@ export const list = () => {
           className="block text-sm font-medium text-start text-gray-700"
           htmlFor="message"
         >
-         {selectedNode.type === "textWithButtonNode"
+          {selectedNode.type === "textWithButtonNode"
             ? "Text with Button"
             : "Message"}
         </label>
         <div className="mt-1">
-          <textarea
+          <TextArea
+            variant="filled"
             rows={4}
             key={selectedNode?.id}
             defaultValue={selectedNode?.data.label}
@@ -72,17 +73,16 @@ export const list = () => {
           />
         </div>
         <div className="py-2 px-3 min-h-[32px]">
-			<List
-			  size="small"
-			  header={<div>Header</div>}
-			  footer={<div>Footer</div>}
-			  bordered
-			  dataSource={data2}
-			  renderItem={(item) => <List.Item>{item}</List.Item>}
-			/>
-		  </div>
+          <List
+            size="small"
+            header={<div>Header</div>}
+            footer={<div>Footer</div>}
+            bordered
+            dataSource={data2}
+            renderItem={(item) => <List.Item>{item}</List.Item>}
+          />
+        </div>
       </div>
-     
     </>
   );
 };
