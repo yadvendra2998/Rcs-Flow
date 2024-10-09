@@ -126,20 +126,9 @@ export const richcardcarousel = () => {
   const [richCardCarousels, setRichCardCarousels] =
     useState<RichCardButtonsState[]>(initialCards);
 
-  console.log("Initial State:", richCardCarousels);
-
   const handleCardChange = (newValue: React.SetStateAction<number>) => {
     setCardIndex(newValue);
   };
-
-  useEffect(() => {
-    if (selectedNode) {
-      const currentCarousel = selectedNode.data?.richCardCarousels?.[cardIndex];
-      if (currentCarousel) {
-        setValue1(currentCarousel.mediaHeight || "short"); // Set value1 based on the current card's mediaHeight
-      }
-    }
-  }, [cardIndex, selectedNode]);
 
   const onChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -162,14 +151,14 @@ export const richcardcarousel = () => {
 
   const handleAddCardsTemplate = () => {
     if (options.length < 10) {
-      const newButton:RichCardButton = {
+      const newButton: RichCardButton = {
         id: 0, // Set this dynamically if you have multiple buttons per card
         type: "quick",
         title: "",
         payload: "",
       };
-  
-      const newCard:RichCardButtonsState = {
+
+      const newCard: RichCardButtonsState = {
         title: "",
         description: "",
         media: "",
@@ -180,14 +169,14 @@ export const richcardcarousel = () => {
 
       setRichCardCarousels((prev) => {
         const updatedCarousels = [...prev, newCard];
-        
+
         // Call updateNodeLabel with the updated state
         if (selectedNode) {
           updateNodeLabel(selectedNode.id, {
             richCardCarousels: updatedCarousels,
           });
         }
-  
+
         return updatedCarousels;
       });
     } else {
@@ -197,21 +186,9 @@ export const richcardcarousel = () => {
 
   useEffect(() => {
     if (selectedNode) {
-      const selectedCarousel =
-        selectedNode.data?.richCardCarousels?.[cardIndex];
-        setTemplateName(selectedNode.data?.name)
-      if (selectedCarousel) {
-        setMedia(selectedCarousel.media || null);
-        setTitle(selectedCarousel.title || "");
-        setDescription(selectedCarousel.description || "");
-
-        setRichCardCarousels(
-          selectedNode?.data?.richCardCarousels?.map(
-            (card: RichCardButtonsState, i: number) => ({
-              ...card,
-            })
-          )
-        );
+      setTemplateName(selectedNode.data?.name);
+      if (selectedNode.data?.richCardCarousels) {
+        setRichCardCarousels(selectedNode.data?.richCardCarousels);
         setOptions(
           selectedNode?.data?.richCardCarousels?.map(
             (_: any, i: number) => `Card ${i + 1}`
@@ -219,7 +196,7 @@ export const richcardcarousel = () => {
         );
       }
     }
-  }, [selectedNode, cardIndex,description,templateName,title]);
+  }, [selectedNode, cardIndex]);
 
   const customRequest = ({ file, onSuccess }: any) => {
     setTimeout(() => {
@@ -272,20 +249,18 @@ export const richcardcarousel = () => {
     if (selectedNode) {
       updateNodeLabel(selectedNode.id, {
         richCardCarousels: richCardCarousels,
-        name:value
+        name: value,
       });
     }
   };
 
-  const handleDescriptionChange = (value: string) => {
-    setDescription(value);
-
+  // Function to handle updating title
+  const handleChange2 = (value: string) => {
     setRichCardCarousels((prev) => {
       const updated = [...prev];
-      updated[cardIndex] = {
-        ...updated[cardIndex],
-        description: value, // Only update the description, keep other properties
-      };
+      updated[cardIndex].title = value; // Update only the current card
+      console.log("updated", updated);
+      console.log("selectedNode", selectedNode);
       if (selectedNode) {
         updateNodeLabel(selectedNode.id, {
           name: templateName,
@@ -294,29 +269,62 @@ export const richcardcarousel = () => {
       }
       return updated;
     });
-
-    
   };
 
-  const handleChange2 = (value: string) => {
-    setTitle(value);
-
+  // Function to handle updating description
+  const handleDescriptionChange = (value: string) => {
     setRichCardCarousels((prev) => {
       const updated = [...prev];
-      updated[cardIndex] = {
-        ...updated[cardIndex],
-        title: value, // Only update the title, keep other properties
-      };
+      updated[cardIndex].description = value; // Update only the current card
+      if (selectedNode) {
+        updateNodeLabel(selectedNode.id, {
+          name: templateName,
+          richCardCarousels: updated,
+        });
+      }
       return updated;
     });
-
-    if (selectedNode) {
-      updateNodeLabel(selectedNode.id, {
-        name: templateName,
-        richCardCarousels: richCardCarousels,
-      });
-    }
   };
+
+  // const handleDescriptionChange = (value: string) => {
+  //   setDescription(value);
+
+  //   setRichCardCarousels((prev) => {
+  //     const updated = [...prev];
+  //     updated[cardIndex] = {
+  //       ...updated[cardIndex],
+  //       description: value, // Only update the description, keep other properties
+  //     };
+  //     if (selectedNode) {
+  //       updateNodeLabel(selectedNode.id, {
+  //         name: templateName,
+  //         richCardCarousels: updated,
+  //       });
+  //     }
+  //     return updated;
+  //   });
+
+  // };
+
+  // const handleChange2 = (value: string) => {
+  //   setTitle(value);
+
+  //   setRichCardCarousels((prev) => {
+  //     const updated = [...prev];
+  //     updated[cardIndex] = {
+  //       ...updated[cardIndex],
+  //       title: value, // Only update the title, keep other properties
+  //     };
+  //     if (selectedNode) {
+  //       updateNodeLabel(selectedNode.id, {
+  //         name: templateName,
+  //         richCardCarousels: richCardCarousels,
+  //       });
+  //     }
+  //     return updated;
+  //   });
+
+  // };
 
   return (
     <>
@@ -332,22 +340,14 @@ export const richcardcarousel = () => {
       </div>
       <hr />
       <div className="p-2 mt-3">
-        <Form layout="vertical">
-          <Form.Item
-            name={`templatename`}
-            label="Template Name"
-            style={{ marginBottom: "10px" }}
-          >
-            <Input
-              variant="filled"
-              placeholder="Template Name"
-              defaultValue={selectedNode?.data?.name || ""}
-              onChange={(e) => {
-                handleTemplateNameChange(e.target.value);
-              }}
-            />
-          </Form.Item>
-        </Form>
+        <Input
+          variant="filled"
+          placeholder="Template Name"
+          defaultValue={selectedNode?.data?.name || ""}
+          onChange={(e) => {
+            handleTemplateNameChange(e.target.value);
+          }}
+        />
         <Row>
           <Col md={24}>
             <Flex
@@ -393,55 +393,32 @@ export const richcardcarousel = () => {
           </Col>
         </Row>
         <br />
-        <Row>
-          <Col md={24}>
-            <Form
-              layout="vertical"
-              initialValues={{
-                title:
-                  selectedNode?.data?.richCardCarousels?.[cardIndex]?.title ||
-                  "",
-                description:
-                  selectedNode?.data?.richCardCarousels?.[cardIndex]
-                    ?.description || "",
-              }}
-            >
-              <Form.Item
-                name={`title${cardIndex}`}
-                label="Title"
-                style={{ marginBottom: "10px" }}
-              >
-                <Input
-                  variant="filled"
-                  placeholder="Title"
-                  defaultValue={
-                    selectedNode?.data?.richCardCarousels?.[cardIndex]?.title ||
-                    ""
-                  }
-                  onChange={(e) => handleChange2(e.target.value)}
-                  key={selectedNode?.id}
-                  id="message"
-                />
-              </Form.Item>
-              <Form.Item
-                name={`description${cardIndex}`}
-                label="Description"
-                style={{ marginBottom: "10px" }}
-              >
-                <TextArea
-                  variant="filled"
-                  placeholder="Description"
-                  defaultValue={
-                    selectedNode?.data?.richCardCarousels?.[cardIndex]
-                      ?.description || ""
-                  }
-                  rows={4}
-                  onChange={(e) => handleDescriptionChange(e.target.value)}
-                />
-              </Form.Item>
-            </Form>
-          </Col>
-        </Row>
+
+        <Col md={24} style={{ marginBottom: 10 }}>
+          <Typography style={{ textAlign: "start", marginBottom: 2 }}>
+            Title
+          </Typography>
+          <Input
+            variant="filled"
+            placeholder="Title"
+            value={richCardCarousels?.[cardIndex]?.title || ""}
+            onChange={(e) => handleChange2(e.target.value)}
+            key={selectedNode?.id}
+            id="message"
+          />
+        </Col>
+        <Col>
+          <Typography style={{ textAlign: "start", marginBottom: 2 }}>
+            Description
+          </Typography>
+          <TextArea
+            variant="filled"
+            placeholder="Description"
+            value={richCardCarousels?.[cardIndex]?.description || ""}
+            rows={4}
+            onChange={(e) => handleDescriptionChange(e.target.value)}
+          />
+        </Col>
 
         <Row>
           <Col md={24}>
@@ -540,12 +517,9 @@ export const richcardcarousel = () => {
           <Col md={24}>
             <Form.Item
               layout="vertical"
+              name={`mediaHeight${cardIndex}`}
               label={"Size"}
               rules={[{ required: true, message: "Please select size" }]}
-              initialValue={
-                selectedNode?.data?.richCardCarousels?.[cardIndex]
-                  ?.mediaHeight || richCardCarousels?.[cardIndex]?.mediaHeight
-              }
             >
               <Radio.Group
                 style={{ marginTop: "10px", width: "100%", textAlign: "left" }}

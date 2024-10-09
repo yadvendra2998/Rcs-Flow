@@ -62,6 +62,7 @@ const AddCarouselButtons = ({
 }: RichCarouselButtonProps) => {
   const { selectedNode, updateNodeLabel } = useStore(selector, shallow);
 
+  
   useEffect(() => {
     const initValues = richCardCarousels?.[cardIndex]?.button?.reduce(
       (acc: { [x: string]: any }, button: ActionData, i: any) => {
@@ -120,9 +121,10 @@ const AddCarouselButtons = ({
   };
 
   const addNewCard = () => {
-    if (richCardCarousels?.[cardIndex]?.button?.length < 11) {
+    const currentCard = richCardCarousels?.[cardIndex];
+    if (currentCard && currentCard.button.length < 11) {
       const newButton: ActionData = {
-        id: richCardCarousels?.[cardIndex].button.length,
+        id: currentCard?.button?.length,
         type: "quick",
         title: "",
         payload: "",
@@ -148,6 +150,9 @@ const AddCarouselButtons = ({
       message.warning("Cannot add more than 11 buttons");
     }
   };
+
+  console.log("state", selectedNode);
+
 
   const deleteCard = (index: number) => {
     if (richCardCarousels?.[cardIndex]?.button?.length > 1) {

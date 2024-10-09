@@ -362,12 +362,14 @@ import {
 import { create } from "zustand";
 import { nodesConfig } from "./site";
 import { UploadFile } from "antd";
+import { RichCardButtonsState } from "@/components/panels/richcardcarousel";
 
 export type NodeData = {
   label: string;
   isInitial?: boolean;
   name?: string;
   media?: UploadFile[];
+  richCardCarousels:RichCardButtonsState[];
 };
 
 export type NodeTypes = "textNode";
@@ -377,6 +379,7 @@ type RFState = {
   edges: Edge[];
   selectedNode: Node | null;
   startNodeId: string | null; // Ensure to specify the type
+  richCardCarousels:RichCardButtonsState[];
   setStartNode: (id: string | null) => void;
   setNodes: (node: Node) => void;
   onNodesChange: OnNodesChange;
@@ -504,7 +507,7 @@ const useStore = create<RFState>((set, get) => ({
         console.error(`Node with ID ${nodeId} does not exist.`);
         return state; // Early return if the node doesn't exist
       }
-
+     
       return {
         nodes: state.nodes.map((node) => {
           if (node.id === nodeId) {
