@@ -20,7 +20,6 @@ import { Node } from "reactflow";
 import { shallow } from "zustand/shallow";
 import CustomSegment from "./customSegment";
 import TextArea from "antd/es/input/TextArea";
-import Addbutton from "./Addbutton";
 import AddCarouselButtons from "./AddCarouselButtons";
 
 interface RichCardButton {
@@ -81,16 +80,6 @@ export const richcardcarousel = () => {
   const [templateName, setTemplateName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [title, setTitle] = useState<string>("");
-  // const [button, setButton] = useState<{ actions: ActionData[] }>({
-  //   actions: [
-  //     {
-  //       id: 0,
-  //       type: "quick",
-  //       title: "",
-  //       payload: "",
-  //     },
-  //   ],
-  // });
 
   const initialCards = [
     {
@@ -186,17 +175,17 @@ export const richcardcarousel = () => {
 
   useEffect(() => {
     if (selectedNode) {
-      setTemplateName(selectedNode.data?.name);
+      setTemplateName(selectedNode.data?.name || "");
+  
       if (selectedNode.data?.richCardCarousels) {
-        setRichCardCarousels(selectedNode.data?.richCardCarousels);
-        setOptions(
-          selectedNode?.data?.richCardCarousels?.map(
-            (_: any, i: number) => `Card ${i + 1}`
-          )
-        );
+        // Only set richCardCarousels if it has changed
+        if (JSON.stringify(richCardCarousels) !== JSON.stringify(selectedNode.data.richCardCarousels)) {
+          setRichCardCarousels(selectedNode.data.richCardCarousels);
+          setOptions(selectedNode.data.richCardCarousels.map((_:any, i:number) => `Card ${i + 1}`));
+        }
       }
     }
-  }, [selectedNode, cardIndex]);
+  }, [selectedNode]);
 
   const customRequest = ({ file, onSuccess }: any) => {
     setTimeout(() => {
@@ -256,11 +245,9 @@ export const richcardcarousel = () => {
 
   // Function to handle updating title
   const handleChange2 = (value: string) => {
-    setRichCardCarousels((prev) => {
+    setRichCardCarousels((prev:RichCardButtonsState[]) => {
       const updated = [...prev];
       updated[cardIndex].title = value; // Update only the current card
-      console.log("updated", updated);
-      console.log("selectedNode", selectedNode);
       if (selectedNode) {
         updateNodeLabel(selectedNode.id, {
           name: templateName,
@@ -270,10 +257,11 @@ export const richcardcarousel = () => {
       return updated;
     });
   };
+  console.log("state",richCardCarousels)
 
   // Function to handle updating description
   const handleDescriptionChange = (value: string) => {
-    setRichCardCarousels((prev) => {
+    setRichCardCarousels((prev:RichCardButtonsState[]) => {
       const updated = [...prev];
       updated[cardIndex].description = value; // Update only the current card
       if (selectedNode) {
@@ -285,46 +273,6 @@ export const richcardcarousel = () => {
       return updated;
     });
   };
-
-  // const handleDescriptionChange = (value: string) => {
-  //   setDescription(value);
-
-  //   setRichCardCarousels((prev) => {
-  //     const updated = [...prev];
-  //     updated[cardIndex] = {
-  //       ...updated[cardIndex],
-  //       description: value, // Only update the description, keep other properties
-  //     };
-  //     if (selectedNode) {
-  //       updateNodeLabel(selectedNode.id, {
-  //         name: templateName,
-  //         richCardCarousels: updated,
-  //       });
-  //     }
-  //     return updated;
-  //   });
-
-  // };
-
-  // const handleChange2 = (value: string) => {
-  //   setTitle(value);
-
-  //   setRichCardCarousels((prev) => {
-  //     const updated = [...prev];
-  //     updated[cardIndex] = {
-  //       ...updated[cardIndex],
-  //       title: value, // Only update the title, keep other properties
-  //     };
-  //     if (selectedNode) {
-  //       updateNodeLabel(selectedNode.id, {
-  //         name: templateName,
-  //         richCardCarousels: richCardCarousels,
-  //       });
-  //     }
-  //     return updated;
-  //   });
-
-  // };
 
   return (
     <>

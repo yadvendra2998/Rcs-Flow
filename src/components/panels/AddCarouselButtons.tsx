@@ -151,8 +151,6 @@ const AddCarouselButtons = ({
     }
   };
 
-  console.log("state", selectedNode);
-
 
   const deleteCard = (index: number) => {
     if (richCardCarousels?.[cardIndex]?.button?.length > 1) {
